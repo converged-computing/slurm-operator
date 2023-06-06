@@ -1,0 +1,90 @@
+name: test slurm-operator
+
+on:
+  pull_request: []
+
+jobs:
+  formatting:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup black linter
+      run: conda create --quiet --name black pyflakes
+
+    - name: Check Spelling
+      uses: crate-ci/typos@7ad296c72fa8265059cc03d1eda562fbdfcd6df2 # v1.9.0
+      with:
+        files: ./README.md ./config/samples
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ^1.18
+    - name: fmt check
+      run: make fmt
+
+    # These aren't written yet
+    - name: Run Unit tests
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: make test
+
+    # Ensure build-config is the same as the one we have
+    - name: Check Updated slurm-operator.yaml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        cp examples/dist/slurm-operator.yaml /tmp/slurm-operator.yaml
+        make build-config
+        diff examples/dist/slurm-operator.yaml /tmp/slurm-operator.yaml
+
+  test-jobs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test: [["hello-world", "ghcr.io/converged-computing/slurm:latest", 60]]
+
+    steps:
+    - name: Clone the code
+      uses: actions/checkout@v3
+
+    - name: Setup Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ^1.18
+
+    - name: Start minikube
+      uses: medyagh/setup-minikube@697f2b7aaed5f70bf2a94ee21a4ec3dde7b12f92 # v0.0.9
+
+    - name: Create the namespace
+      run: kubectl create namespace slurm-operator
+
+    - name: Pull Docker Containers to MiniKube
+      env:
+        container: ${{ matrix.test[1] }}
+        test: ${{ matrix[0] }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        export SHELL=/bin/bash
+        eval $(minikube -p minikube docker-env)
+        minikube ssh docker pull ${container}
+        make deploy-local
+        minikube image load ghcr.io/converged-computing/slurm-operator:test
+        kubectl apply -f examples/dist/slurm-operator-local.yaml
+
+    - name: Test ${{ matrix.test[0] }}
+      env:
+        name: ${{ matrix.test[0] }}
+        jobtime: ${{ matrix.test[2] }}
+      run: |
+        echo "TODO test ${name}"
+        # /bin/bash ./script/test.sh ${name} ${jobtime}

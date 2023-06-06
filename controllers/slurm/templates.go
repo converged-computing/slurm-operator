@@ -26,6 +26,9 @@ var startServerTemplate string
 //go:embed templates/worker.sh
 var startWorkerTemplate string
 
+//go:embed templates/daemon.sh
+var startDaemonTemplate string
+
 //go:embed templates/components.sh
 var startComponents string
 
@@ -39,6 +42,14 @@ var slurmDbdConf string
 type NodeTemplate struct {
 	Node api.Node
 	Spec api.SlurmSpec
+}
+
+type ConfigTemplate struct {
+	Spec         api.SlurmSpec
+	DaemonHost   string
+	ControlHost  string
+	DatabaseHost string
+	Hostlist     string
 }
 
 // combineTemplates into one "start"
@@ -72,6 +83,54 @@ func generateScript(cluster *api.Slurm, node api.Node, startTemplate string) (st
 	}
 	var output bytes.Buffer
 	if err := t.ExecuteTemplate(&output, "start", nt); err != nil {
+		return "", err
+	}
+	return output.String(), nil
+}
+
+// generateHostlist for a specific size given the cluster namespace and a size
+// slurm-sample-slurm-sample-worker-0-0.slurm-service.slurm-operator.svc.cluster.local
+func generateHostlist(cluster *api.Slurm) string {
+	hosts := fmt.Sprintf("[%s]", generateRange(int(cluster.WorkerNodes()), 1))
+	return fmt.Sprintf("%s-%s-worker-0-%s.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, hosts, serviceName, cluster.Namespace)
+}
+
+// generateRange is a shared function to generate a range string
+func generateRange(size int, start int) string {
+	var rangeString string
+	if size == 1 {
+		rangeString = fmt.Sprintf("%d", start)
+	} else {
+		rangeString = fmt.Sprintf("%d-%d", start, size-1)
+	}
+	return rangeString
+}
+
+func generateConfig(cluster *api.Slurm, startTemplate string) (string, error) {
+
+	// control: slurm-sample-slurm-sample-server-0-0.slurm-service.slurm-operator.svc.cluster.local
+	control := fmt.Sprintf("%s-%s-server-0-0.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, serviceName, cluster.Namespace)
+	database := fmt.Sprintf("%s-%s-database-0-0.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, serviceName, cluster.Namespace)
+	daemon := fmt.Sprintf("%s-%s-daemon-0-0.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, serviceName, cluster.Namespace)
+
+	ct := ConfigTemplate{
+		Spec:         cluster.Spec,
+		ControlHost:  control,
+		DatabaseHost: database,
+		DaemonHost:   daemon,
+		Hostlist:     generateHostlist(cluster),
+	}
+
+	// Wrap the named template to identify it later
+	startTemplate = `{{define "start"}}` + startTemplate + "{{end}}"
+
+	// We assemble different strings (including the components) into one!
+	t, err := combineTemplates(startComponents, startTemplate)
+	if err != nil {
+		return "", err
+	}
+	var output bytes.Buffer
+	if err := t.ExecuteTemplate(&output, "start", ct); err != nil {
 		return "", err
 	}
 	return output.String(), nil

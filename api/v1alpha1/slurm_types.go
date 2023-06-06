@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"reflect"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,10 +29,14 @@ type SlurmSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Server is the main server to run slurm
-	Server Node `json:"server"`
+	// Server is the login node
+	Login Node `json:"login"`
 
-	// Worker is the worker node spec
+	// Slurm dbd "daemon"
+	//+optional
+	Daemon Node `json:"daemon"`
+
+	// Worker is the worker node spec, does not include login slurmctl or slurmdbd
 	// Defaults to be same spec as the server
 	//+optional
 	Worker Node `json:"worker"`
@@ -78,8 +83,27 @@ type Database struct {
 	// Default Environment, will be set if not defined here
 	// Note that by defalt we set MYSQL_* envars.
 	// If you use a different database, be sure to set them all
+	// Username and password are set separately below!
 	// +optional
 	Environment map[string]string `json:"environment"`
+
+	// Database user
+	// +kubebuilder:default="slurm"
+	// +default="slurm"
+	// +optional
+	User string `json:"user"`
+
+	// Database password
+	// +kubebuilder:default="password"
+	// +default="password"
+	// +optional
+	Password string `json:"password"`
+
+	// Name of the database
+	// +kubebuilder:default="slurm_acct_db"
+	// +default="slurm_acct_db"
+	// +optional
+	DatabaseName string `json:"databaseName"`
 
 	// PullAlways will always pull the container
 	// +optional
@@ -152,6 +176,10 @@ type Resource map[string]intstr.IntOrString
 
 // Validate the slurm
 func (s *Slurm) Validate() bool {
+	if s.WorkerNodes() < 1 {
+		fmt.Printf("😥️ Slurm cluster must have at least one worker node, Size >= 2.\n")
+		return false
+	}
 	return true
 }
 
@@ -167,9 +195,18 @@ func (s *Slurm) WorkerNode() Node {
 	// If we don't have a worker spec, copy the parent
 	workerNode := s.Spec.Worker
 	if reflect.DeepEqual(workerNode, Node{}) {
-		workerNode = s.Spec.Server
+		workerNode = s.Spec.Login
 	}
 	return workerNode
+}
+
+// Daemon falls back to the login node configuatino
+func (s *Slurm) Daemon() Node {
+	node := s.Spec.Daemon
+	if reflect.DeepEqual(node, Node{}) {
+		node = s.Spec.Login
+	}
+	return node
 }
 
 // SlurmStatus defines the observed state of slurm

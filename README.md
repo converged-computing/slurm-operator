@@ -93,6 +93,7 @@ which provide a reconcile function responsible for synchronizing resources until
 ### TODO
 
 - Generate slurm.conf and slurmdbd.conf as templates, with custom hosts, etc.
+- Custom user generation?
 - If username/password not provided, generate as random
 - Add script logging levels / quiet
 

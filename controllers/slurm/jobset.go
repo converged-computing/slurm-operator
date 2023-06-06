@@ -57,10 +57,17 @@ func (r *SlurmReconciler) newJobSet(
 		},
 	}
 
-	// Get leader server job, the parent in the JobSet
-	serverJob, err := r.getJob(cluster, cluster.Spec.Server, 1, "server", true)
+	// Get leader login job, the parent in the JobSet
+	serverJob, err := r.getJob(cluster, cluster.Spec.Login, 1, "server", true)
 	if err != nil {
 		r.Log.Error(err, "There was an error getting the server ReplicatedJob")
+		return &jobs, err
+	}
+
+	// This is the slurm daemon, which looks like a worker
+	daemonJob, err := r.getJob(cluster, cluster.Daemon(), 1, "daemon", true)
+	if err != nil {
+		r.Log.Error(err, "There was an error getting the daemon ReplicatedJob")
 		return &jobs, err
 	}
 
@@ -71,20 +78,14 @@ func (r *SlurmReconciler) newJobSet(
 		return &jobs, err
 	}
 
-	// Create a cluster (JobSet) with or without workers
+	// Create a cluster (JobSet) with workers (required)
 	workerNodes := cluster.WorkerNodes()
-	if workerNodes > 0 {
-
-		workerJob, err := r.getJob(cluster, cluster.WorkerNode(), workerNodes, "worker", true)
-		if err != nil {
-			r.Log.Error(err, "There was an error getting the worker ReplicatedJob")
-			return &jobs, err
-		}
-		jobs.Spec.ReplicatedJobs = []jobset.ReplicatedJob{serverJob, dbJob, workerJob}
-
-	} else {
-		jobs.Spec.ReplicatedJobs = []jobset.ReplicatedJob{serverJob, dbJob}
+	workerJob, err := r.getJob(cluster, cluster.WorkerNode(), workerNodes, "worker", true)
+	if err != nil {
+		r.Log.Error(err, "There was an error getting the worker ReplicatedJob")
+		return &jobs, err
 	}
+	jobs.Spec.ReplicatedJobs = []jobset.ReplicatedJob{serverJob, dbJob, daemonJob, workerJob}
 	ctrl.SetControllerReference(cluster, &jobs, r.Scheme)
 	return &jobs, nil
 }
@@ -93,12 +94,11 @@ func (r *SlurmReconciler) newJobSet(
 func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJob, error) {
 
 	// Default environment
-	// TODO possibly expose these, or generate randomly?
 	environment := map[string]string{
 		"MYSQL_RANDOM_ROOT_PASSWORD": "yes",
-		"MYSQL_DATABASE":             "slurm_acct_db",
-		"MYSQL_USER":                 "slurm",
-		"MYSQL_PASSWORD":             "password",
+		"MYSQL_DATABASE":             cluster.Spec.Database.DatabaseName,
+		"MYSQL_USER":                 cluster.Spec.Database.User,
+		"MYSQL_PASSWORD":             cluster.Spec.Database.Password,
 	}
 
 	// Update environment with user specifation
