@@ -204,6 +204,7 @@ func (in *SlurmList) DeepCopyObject() runtime.Object {
 func (in *SlurmSpec) DeepCopyInto(out *SlurmSpec) {
 	*out = *in
 	in.Login.DeepCopyInto(&out.Login)
+	in.Daemon.DeepCopyInto(&out.Daemon)
 	in.Worker.DeepCopyInto(&out.Worker)
 	in.Database.DeepCopyInto(&out.Database)
 	if in.Resources != nil {
