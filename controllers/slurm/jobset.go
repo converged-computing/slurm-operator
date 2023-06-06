@@ -22,7 +22,8 @@ import (
 )
 
 var (
-	backoffLimit = int32(100)
+	backoffLimit       = int32(100)
+	enableDNSHostnames = true
 )
 
 // newJobSet creates the jobset for the slurm
@@ -47,9 +48,9 @@ func (r *SlurmReconciler) newJobSet(
 			//	Operator:             jobset.OperatorAny,
 			//	TargetReplicatedJobs: []string{serverName},
 			//},
-			FailurePolicy: &jobset.FailurePolicy{
-				MaxRestarts: 0,
-			},
+			//FailurePolicy: &jobset.FailurePolicy{
+			//	MaxRestarts: 0,
+			//},
 
 			// This might be the control for child jobs (worker)
 			// But I don't think we need this anymore.
@@ -107,7 +108,6 @@ func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJ
 	}
 
 	podLabels := r.getPodLabels(cluster)
-	enableDNSHostnames := false
 	completionMode := batchv1.IndexedCompletion
 	size := int32(1)
 
@@ -118,7 +118,7 @@ func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJ
 		},
 		Template: batchv1.JobTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      cluster.Name,
+				Name:      cluster.Name + "-database",
 				Namespace: cluster.Namespace,
 			},
 		},
@@ -190,9 +190,7 @@ func (r *SlurmReconciler) getJob(
 	indexed bool,
 ) (jobset.ReplicatedJob, error) {
 
-	backoffLimit := int32(100)
 	podLabels := r.getPodLabels(cluster)
-	enableDNSHostnames := false
 	completionMode := batchv1.NonIndexedCompletion
 
 	// Is this an indexed job?
@@ -212,7 +210,7 @@ func (r *SlurmReconciler) getJob(
 
 		Template: batchv1.JobTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      cluster.Name,
+				Name:      cluster.Name + "-" + entrypoint,
 				Namespace: cluster.Namespace,
 			},
 		},
