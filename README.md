@@ -3,7 +3,8 @@
 > What happens when I run out of things to do on a Monday... ohno 
 
 This will be an attempt at creating a slurm operator. I mostly want to learn a production setup for SLURM,
-and have some fun! Note that most of the files are not added yet.
+and have some fun! Note that it's not working yet! The next step is to customize the configuration files
+(e.g., slurm.conf and slurmdbd.conf) to be config maps, and specific to the cluster.
 
 ## Development
 
@@ -91,6 +92,8 @@ which provide a reconcile function responsible for synchronizing resources until
 
 ### TODO
 
+- Generate slurm.conf and slurmdbd.conf as templates, with custom hosts, etc.
+- If username/password not provided, generate as random
 - Add script logging levels / quiet
 
 ## License
