@@ -29,8 +29,8 @@ type SlurmSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Server is the login node
-	Login Node `json:"login"`
+	// The generic login node
+	Node Node `json:"node"`
 
 	// Slurm dbd "daemon"
 	//+optional
@@ -180,6 +180,10 @@ func (s *Slurm) Validate() bool {
 		fmt.Printf("😥️ Slurm cluster must have at least one worker node, Size >= 2.\n")
 		return false
 	}
+	// Ensure we have the default image set
+	if s.Spec.Database.Image == "" {
+		s.Spec.Database.Image = "mariadb:10.10"
+	}
 	return true
 }
 
@@ -195,7 +199,7 @@ func (s *Slurm) WorkerNode() Node {
 	// If we don't have a worker spec, copy the parent
 	workerNode := s.Spec.Worker
 	if reflect.DeepEqual(workerNode, Node{}) {
-		workerNode = s.Spec.Login
+		workerNode = s.Spec.Node
 	}
 	return workerNode
 }
@@ -204,7 +208,7 @@ func (s *Slurm) WorkerNode() Node {
 func (s *Slurm) Daemon() Node {
 	node := s.Spec.Daemon
 	if reflect.DeepEqual(node, Node{}) {
-		node = s.Spec.Login
+		node = s.Spec.Node
 	}
 	return node
 }

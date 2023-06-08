@@ -6,6 +6,7 @@ echo "Hello, I am a server with $(hostname)"
 {{template "init" .}}
 
 # Default entrypoint with slurmctld, this is like a login node
+chmod +x /usr/local/bin/docker-entrypoint.sh
 /usr/local/bin/docker-entrypoint.sh slurmctld
 
 {{template "exit" .}}

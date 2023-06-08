@@ -22,8 +22,10 @@ import (
 )
 
 var (
-	backoffLimit       = int32(100)
-	enableDNSHostnames = true
+	backoffLimit = int32(100)
+
+	// We create our own service
+	enableDNSHostnames = false
 )
 
 // newJobSet creates the jobset for the slurm
@@ -59,7 +61,7 @@ func (r *SlurmReconciler) newJobSet(
 	}
 
 	// Get leader login job, the parent in the JobSet
-	serverJob, err := r.getJob(cluster, cluster.Spec.Login, 1, "server", true)
+	serverJob, err := r.getJob(cluster, cluster.Spec.Node, 1, "server", true)
 	if err != nil {
 		r.Log.Error(err, "There was an error getting the server ReplicatedJob")
 		return &jobs, err

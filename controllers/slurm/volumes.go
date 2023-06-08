@@ -43,7 +43,7 @@ func getVolumes(cluster *api.Slurm) []corev1.Volume {
 
 	// Runner start scripts
 	makeExecutable := int32(0777)
-	permission := int32(600)
+	permission := int32(0600)
 
 	// slurm configuration scripts at /etc/slurm
 	slurmConfigs := []corev1.KeyToPath{

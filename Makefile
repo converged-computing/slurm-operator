@@ -204,6 +204,7 @@ test-deploy: manifests kustomize
 	docker push ${DEVIMG}
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${DEVIMG}
 	$(KUSTOMIZE) build config/default > examples/dist/slurm-operator-dev.yaml
+	sed -i 's/        imagePullPolicy: IfNotPresent/        imagePullPolicy: Always/' examples/dist/slurm-operator-dev.yaml
 
 .PHONY: list
 list:

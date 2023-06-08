@@ -153,7 +153,7 @@ func (r *SlurmReconciler) getConfigMap(
 	if configName == "entrypoint" {
 
 		// Generate data for both the start-server.sh and start-worker.sh
-		serverStart, err := generateScript(cluster, cluster.Spec.Login, startServerTemplate)
+		serverStart, err := generateScript(cluster, cluster.Spec.Node, startServerTemplate)
 		if err != nil {
 			return cm, ctrl.Result{}, err
 		}

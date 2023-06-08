@@ -6,6 +6,7 @@ echo "Hello, I am a worker with $(hostname)"
 {{template "init" .}}
 
 # This is a worker node
+chmod +x /usr/local/bin/docker-entrypoint.sh
 /usr/local/bin/docker-entrypoint.sh slurmd
 
 {{template "exit" .}}
