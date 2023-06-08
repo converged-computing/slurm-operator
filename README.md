@@ -24,9 +24,10 @@ You’ll need a Kubernetes cluster to run against. You can use [KIND](https://si
 
 ### Running on the cluster
 
-Create a cluster with kind:
+Create a cluster with MiniKube or kind:
 
 ```bash
+$ minikube start --nodes 4 --kubernetes-version=1.27.0
 $ kind create cluster
 ```
 
@@ -70,6 +71,16 @@ See logs for the operator
 $ kubectl logs -n slurm-operator-system slurm-operator-controller-manager-6f6945579-9pknp 
 ```
 
+Wait until you see the operator running. Then (if you are using MiniKube) you can pre-pull the images to MiniKube for the example run:
+
+```bash
+# This is the default for the login / worker/ daemon nodes
+$ minikube ssh docker pull ghcr.io/converged-computing/slurm:latest
+
+# Default for mysql flavored database
+$ minikube ssh docker pull mariadb:10.10
+```
+
 Create a "hello-world" interactive cluster:
 
 ```bash
@@ -79,6 +90,7 @@ $ kubectl apply -f examples/tests/hello-world/slurm.yaml
 When you are done, cleanup.
 
 ```bash
+$ minikube delete
 $ kind delete cluster
 ```
 
@@ -93,6 +105,7 @@ which provide a reconcile function responsible for synchronizing resources until
 ### TODO
 
 - Generate slurm.conf and slurmdbd.conf as templates, with custom hosts, etc.
+- Custom user generation?
 - If username/password not provided, generate as random
 - Add script logging levels / quiet
 

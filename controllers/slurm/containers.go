@@ -33,12 +33,8 @@ func (r *SlurmReconciler) getContainers(
 
 	// If it's the worker vs. main server determines the entrypoint script
 	// The main server takes a custom command to run
-	script := "/slurm_operator/start-server.sh"
+	script := fmt.Sprintf("/slurm_operator/start-%s.sh", defaultName)
 	command := []string{"/bin/bash", script, node.Command}
-	if defaultName == "worker" {
-		script = "/slurm_operator/start-worker.sh"
-		command = []string{"/bin/bash", script}
-	}
 
 	// Create the containers for the pod (just one for now :)
 	containers := []corev1.Container{}

@@ -35,44 +35,8 @@ spec:
           spec:
             description: SlurmSpec defines the desired state of slurm
             properties:
-              database:
-                description: Database is the database service spec
-                properties:
-                  environment:
-                    additionalProperties:
-                      type: string
-                    description: Default Environment, will be set if not defined here
-                      Note that by defalt we set MYSQL_* envars. If you use a different
-                      database, be sure to set them all
-                    type: object
-                  image:
-                    default: mariadb:10.10
-                    description: Image to use for the database We assume we don't
-                      need to tweak the command
-                    type: string
-                  pullAlways:
-                    description: PullAlways will always pull the container
-                    type: boolean
-                type: object
-              deadlineSeconds:
-                default: 31500000
-                description: Time limit for the job Approximately one year. This cannot
-                  be zero or job won't start
-                format: int64
-                type: integer
-              interactive:
-                description: Interactive mode keeps the cluster running
-                type: boolean
-              resources:
-                additionalProperties:
-                  anyOf:
-                  - type: integer
-                  - type: string
-                  x-kubernetes-int-or-string: true
-                description: Resources include limits and requests
-                type: object
-              server:
-                description: Server is the main server to run slurm
+              daemon:
+                description: Slurm dbd "daemon"
                 properties:
                   command:
                     description: Command will be honored by a server node
@@ -129,6 +93,113 @@ spec:
                     description: Working directory
                     type: string
                 type: object
+              database:
+                description: Database is the database service spec
+                properties:
+                  databaseName:
+                    default: slurm_acct_db
+                    description: Name of the database
+                    type: string
+                  environment:
+                    additionalProperties:
+                      type: string
+                    description: Default Environment, will be set if not defined here
+                      Note that by defalt we set MYSQL_* envars. If you use a different
+                      database, be sure to set them all Username and password are
+                      set separately below!
+                    type: object
+                  image:
+                    default: mariadb:10.10
+                    description: Image to use for the database We assume we don't
+                      need to tweak the command
+                    type: string
+                  password:
+                    default: password
+                    description: Database password
+                    type: string
+                  pullAlways:
+                    description: PullAlways will always pull the container
+                    type: boolean
+                  user:
+                    default: slurm
+                    description: Database user
+                    type: string
+                type: object
+              deadlineSeconds:
+                default: 31500000
+                description: Time limit for the job Approximately one year. This cannot
+                  be zero or job won't start
+                format: int64
+                type: integer
+              interactive:
+                description: Interactive mode keeps the cluster running
+                type: boolean
+              login:
+                description: Server is the login node
+                properties:
+                  command:
+                    description: Command will be honored by a server node
+                    type: string
+                  commands:
+                    description: Commands to run around different parts of the setup
+                    properties:
+                      init:
+                        description: Init runs before anything in both scripts
+                        type: string
+                    type: object
+                  environment:
+                    additionalProperties:
+                      type: string
+                    description: Key/value pairs for the environment
+                    type: object
+                  image:
+                    default: ghcr.io/converged-computing/slurm
+                    description: Image to use for slurm
+                    type: string
+                  ports:
+                    description: Ports to be exposed to other containers in the cluster
+                      We take a single list of integers and map to the same
+                    items:
+                      format: int32
+                      type: integer
+                    type: array
+                    x-kubernetes-list-type: atomic
+                  pullAlways:
+                    description: PullAlways will always pull the container
+                    type: boolean
+                  pullSecret:
+                    description: PullSecret for the node, if needed
+                    type: string
+                  resources:
+                    description: Resources include limits and requests
+                    properties:
+                      limits:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      requests:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                    type: object
+                  workingDir:
+                    description: Working directory
+                    type: string
+                type: object
+              resources:
+                additionalProperties:
+                  anyOf:
+                  - type: integer
+                  - type: string
+                  x-kubernetes-int-or-string: true
+                description: Resources include limits and requests
+                type: object
               size:
                 description: Size of the slurm (1 server + (N-1) nodes)
                 format: int32
@@ -139,8 +210,8 @@ spec:
                   PATH)
                 type: string
               worker:
-                description: Worker is the worker node spec Defaults to be same spec
-                  as the server
+                description: Worker is the worker node spec, does not include login
+                  slurmctl or slurmdbd Defaults to be same spec as the server
                 properties:
                   command:
                     description: Command will be honored by a server node
@@ -198,7 +269,7 @@ spec:
                     type: string
                 type: object
             required:
-            - server
+            - login
             - size
             type: object
           status:

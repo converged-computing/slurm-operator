@@ -34,8 +34,12 @@ func (r *SlurmReconciler) ensureslurm(
 	cluster *api.Slurm,
 ) (ctrl.Result, error) {
 
-	// Add entrypoint config maps and access.json
+	// Add entrypoint config maps and those in /etc/slurm
 	_, result, err := r.ensureConfigMap(ctx, cluster, "entrypoint", cluster.Name+entrypointSuffix)
+	if err != nil {
+		return result, err
+	}
+	_, result, err = r.ensureConfigMap(ctx, cluster, "slurmconf", cluster.Name+configSuffix)
 	if err != nil {
 		return result, err
 	}
@@ -149,7 +153,7 @@ func (r *SlurmReconciler) getConfigMap(
 	if configName == "entrypoint" {
 
 		// Generate data for both the start-server.sh and start-worker.sh
-		serverStart, err := generateScript(cluster, cluster.Spec.Server, startServerTemplate)
+		serverStart, err := generateScript(cluster, cluster.Spec.Login, startServerTemplate)
 		if err != nil {
 			return cm, ctrl.Result{}, err
 		}
@@ -157,10 +161,27 @@ func (r *SlurmReconciler) getConfigMap(
 		if err != nil {
 			return cm, ctrl.Result{}, err
 		}
-
-		// !!TODO add slurm.conf and slurmdbd.conf here!!
+		daemonStart, err := generateScript(cluster, cluster.WorkerNode(), startDaemonTemplate)
+		if err != nil {
+			return cm, ctrl.Result{}, err
+		}
 		data["start-server"] = serverStart
 		data["start-worker"] = workerStart
+		data["start-daemon"] = daemonStart
+	}
+
+	if configName == "slurmconf" {
+
+		slurmconfig, err := generateConfig(cluster, slurmConf)
+		if err != nil {
+			return cm, ctrl.Result{}, err
+		}
+		dbdconfig, err := generateConfig(cluster, slurmDbdConf)
+		if err != nil {
+			return cm, ctrl.Result{}, err
+		}
+		data["slurm.conf"] = slurmconfig
+		data["slurmdbd.conf"] = dbdconfig
 	}
 
 	// Create the config map with respective data!
