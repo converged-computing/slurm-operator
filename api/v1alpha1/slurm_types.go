@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/google/uuid"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -179,6 +180,15 @@ func (s *Slurm) Validate() bool {
 	if s.Spec.Database.Image == "" {
 		s.Spec.Database.Image = "mariadb:10.10"
 	}
+
+	// Along with a username and password
+	if s.Spec.Database.DatabaseName == "" {
+		s.Spec.Database.DatabaseName = "slurm_acct_db"
+	}
+	s.Spec.Database.Password = getRandomToken(s.Spec.Database.Password)
+	if s.Spec.Database.User == "" {
+		s.Spec.Database.User = "slurm"
+	}
 	return true
 }
 
@@ -197,6 +207,14 @@ func (s *Slurm) WorkerNode() Node {
 		workerNode = s.Spec.Node
 	}
 	return workerNode
+}
+
+// getRandomToken returns a requested token, or a generated one
+func getRandomToken(requested string) string {
+	if requested != "" {
+		return requested
+	}
+	return uuid.New().String()
 }
 
 // Daemon falls back to the login node configuatino

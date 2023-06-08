@@ -3,6 +3,13 @@
 # Shared components for the broker and worker template
 {{define "init"}}
 
+# Copy over configs on all nodes
+if [[ -f "/etc/slurm_operator/slurmdbd.conf" ]]; then 
+    mkdir -p /etc/slurm
+    cp /etc/slurm_operator/* /etc/slurm
+    chown slurm /etc/slurm/slurmdbd.conf
+fi
+
 # Initialization commands
 {{ .Node.Commands.Init}} > /dev/null 2>&1
 
