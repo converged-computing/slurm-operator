@@ -6,6 +6,12 @@ echo "Hello, I am a worker with $(hostname)"
 {{template "init" .}}
 
 # This is a worker node
-/usr/local/bin/docker-entrypoint.sh slurmd
+echo "---> Starting the MUNGE Authentication service (munged) ..."
+gosu munge /usr/sbin/munged
+
+echo "---> Waiting for slurmctld to become active before starting slurmd..."
+sleep 30
+echo "---> Starting the Slurm Node Daemon (slurmd) ..."
+exec /usr/sbin/slurmd -Dvvv
 
 {{template "exit" .}}

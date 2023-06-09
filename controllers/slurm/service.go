@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	serviceName = "slurm-service"
+	serviceName = "slurm-svc"
 )
 
 // exposeService will expose services for job networking (headless)

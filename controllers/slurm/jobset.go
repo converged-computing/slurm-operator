@@ -22,8 +22,11 @@ import (
 )
 
 var (
-	backoffLimit       = int32(100)
-	enableDNSHostnames = true
+	backoffLimit = int32(100)
+
+	// We create our own service
+	enableDNSHostnames = false
+	setHostnameAsFQDN  = true
 )
 
 // newJobSet creates the jobset for the slurm
@@ -59,14 +62,14 @@ func (r *SlurmReconciler) newJobSet(
 	}
 
 	// Get leader login job, the parent in the JobSet
-	serverJob, err := r.getJob(cluster, cluster.Spec.Login, 1, "server", true)
+	serverJob, err := r.getJob(cluster, cluster.Spec.Node, 1, "s", true)
 	if err != nil {
 		r.Log.Error(err, "There was an error getting the server ReplicatedJob")
 		return &jobs, err
 	}
 
 	// This is the slurm daemon, which looks like a worker
-	daemonJob, err := r.getJob(cluster, cluster.Daemon(), 1, "daemon", true)
+	daemonJob, err := r.getJob(cluster, cluster.Daemon(), 1, "d", true)
 	if err != nil {
 		r.Log.Error(err, "There was an error getting the daemon ReplicatedJob")
 		return &jobs, err
@@ -81,7 +84,7 @@ func (r *SlurmReconciler) newJobSet(
 
 	// Create a cluster (JobSet) with workers (required)
 	workerNodes := cluster.WorkerNodes()
-	workerJob, err := r.getJob(cluster, cluster.WorkerNode(), workerNodes, "worker", true)
+	workerJob, err := r.getJob(cluster, cluster.WorkerNode(), workerNodes, "w", true)
 	if err != nil {
 		r.Log.Error(err, "There was an error getting the worker ReplicatedJob")
 		return &jobs, err
@@ -112,13 +115,13 @@ func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJ
 	size := int32(1)
 
 	job := jobset.ReplicatedJob{
-		Name: cluster.Name + "-database",
+		Name: "db",
 		Network: &jobset.Network{
 			EnableDNSHostnames: &enableDNSHostnames,
 		},
 		Template: batchv1.JobTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      cluster.Name + "-database",
+				Name:      "db",
 				Namespace: cluster.Namespace,
 			},
 		},
@@ -143,8 +146,9 @@ func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJ
 			},
 			Spec: corev1.PodSpec{
 				// matches the service
-				Subdomain:     serviceName,
-				RestartPolicy: corev1.RestartPolicyOnFailure,
+				Subdomain:         serviceName,
+				SetHostnameAsFQDN: &setHostnameAsFQDN,
+				RestartPolicy:     corev1.RestartPolicyOnFailure,
 			},
 		},
 	}
@@ -168,7 +172,7 @@ func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJ
 
 	// Create the containers for the pod (just one for now :)
 	containers := []corev1.Container{{
-		Name:            cluster.Name + "-database",
+		Name:            "db",
 		Image:           cluster.Spec.Database.Image,
 		ImagePullPolicy: pullPolicy,
 		Stdin:           true,
@@ -199,7 +203,7 @@ func (r *SlurmReconciler) getJob(
 	}
 
 	job := jobset.ReplicatedJob{
-		Name: cluster.Name + "-" + entrypoint,
+		Name: entrypoint,
 
 		// This would allow pods to be reached by their hostnames!
 		// It doesn't work at the moment, but could if we can specify the service name
@@ -210,7 +214,7 @@ func (r *SlurmReconciler) getJob(
 
 		Template: batchv1.JobTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      cluster.Name + "-" + entrypoint,
+				Name:      entrypoint,
 				Namespace: cluster.Namespace,
 			},
 		},
@@ -235,9 +239,10 @@ func (r *SlurmReconciler) getJob(
 			},
 			Spec: corev1.PodSpec{
 				// matches the service
-				Subdomain:     serviceName,
-				Volumes:       getVolumes(cluster),
-				RestartPolicy: corev1.RestartPolicyOnFailure,
+				SetHostnameAsFQDN: &setHostnameAsFQDN,
+				Subdomain:         serviceName,
+				Volumes:           getVolumes(cluster),
+				RestartPolicy:     corev1.RestartPolicyOnFailure,
 			},
 		},
 	}

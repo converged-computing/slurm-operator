@@ -61,7 +61,20 @@ func (r *SlurmReconciler) getContainers(
 	}
 
 	// Ports and environment
-	ports := []corev1.ContainerPort{}
+	ports := []corev1.ContainerPort{
+		{
+			ContainerPort: int32(6717),
+			Protocol:      "TCP",
+		},
+		{
+			ContainerPort: int32(6718),
+			Protocol:      "TCP",
+		},
+		{
+			ContainerPort: int32(6719),
+			Protocol:      "TCP",
+		},
+	}
 	envars := []corev1.EnvVar{}
 
 	// For now we will take ports and have container port == exposed port

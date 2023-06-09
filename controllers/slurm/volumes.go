@@ -28,9 +28,10 @@ func getVolumeMounts(cluster *api.Slurm) []corev1.VolumeMount {
 			MountPath: "/slurm_operator/",
 			ReadOnly:  true,
 		},
+		// We stage files here, and then will move them over to /etc/slurm
 		{
 			Name:      cluster.Name + configSuffix,
-			MountPath: "/etc/slurm/",
+			MountPath: "/etc/slurm_operator/",
 			ReadOnly:  true,
 		},
 	}
@@ -43,7 +44,7 @@ func getVolumes(cluster *api.Slurm) []corev1.Volume {
 
 	// Runner start scripts
 	makeExecutable := int32(0777)
-	permission := int32(600)
+	permission := int32(0600)
 
 	// slurm configuration scripts at /etc/slurm
 	slurmConfigs := []corev1.KeyToPath{
@@ -63,17 +64,17 @@ func getVolumes(cluster *api.Slurm) []corev1.Volume {
 	runnerScripts := []corev1.KeyToPath{
 		{
 			Key:  "start-server",
-			Path: "start-server.sh",
+			Path: "start-s.sh",
 			Mode: &makeExecutable,
 		},
 		{
 			Key:  "start-worker",
-			Path: "start-worker.sh",
+			Path: "start-w.sh",
 			Mode: &makeExecutable,
 		},
 		{
 			Key:  "start-daemon",
-			Path: "start-daemon.sh",
+			Path: "start-d.sh",
 			Mode: &makeExecutable,
 		},
 	}

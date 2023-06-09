@@ -43,6 +43,10 @@ spec:
           spec:
             description: SlurmSpec defines the desired state of slurm
             properties:
+              clusterName:
+                default: linux
+                description: Name of the cluster
+                type: string
               daemon:
                 description: Slurm dbd "daemon"
                 properties:
@@ -136,8 +140,8 @@ spec:
               interactive:
                 description: Interactive mode keeps the cluster running
                 type: boolean
-              login:
-                description: Server is the login node
+              node:
+                description: The generic login node
                 properties:
                   command:
                     description: Command will be honored by a server node
@@ -267,7 +271,7 @@ spec:
                     type: string
                 type: object
             required:
-            - login
+            - node
             - size
             type: object
           status:
@@ -797,7 +801,7 @@ spec:
         command:
         - /manager
         image: ghcr.io/converged-computing/slurm-operator:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz

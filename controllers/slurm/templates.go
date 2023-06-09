@@ -89,29 +89,26 @@ func generateScript(cluster *api.Slurm, node api.Node, startTemplate string) (st
 }
 
 // generateHostlist for a specific size given the cluster namespace and a size
-// slurm-sample-slurm-sample-worker-0-0.slurm-service.slurm-operator.svc.cluster.local
+// slurm-sample-w-0-0.slurm-service.slurm-operator.svc.cluster.local
 func generateHostlist(cluster *api.Slurm) string {
-	hosts := fmt.Sprintf("[%s]", generateRange(int(cluster.WorkerNodes()), 1))
-	return fmt.Sprintf("%s-%s-worker-0-%s.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, hosts, serviceName, cluster.Namespace)
-}
+	hosts := ""
 
-// generateRange is a shared function to generate a range string
-func generateRange(size int, start int) string {
-	var rangeString string
-	if size == 1 {
-		rangeString = fmt.Sprintf("%d", start)
-	} else {
-		rangeString = fmt.Sprintf("%d-%d", start, size-1)
+	for i := 0; i < int(cluster.WorkerNodes()); i++ {
+		if hosts == "" {
+			hosts = fmt.Sprintf("%s-w-0-%d.%s.%s.svc.cluster.local", cluster.Name, i, serviceName, cluster.Namespace)
+		} else {
+			hosts = fmt.Sprintf("%s,%s-w-0-%d.%s.%s.svc.cluster.local", hosts, cluster.Name, i, serviceName, cluster.Namespace)
+		}
 	}
-	return rangeString
+	return hosts
 }
 
 func generateConfig(cluster *api.Slurm, startTemplate string) (string, error) {
 
-	// control: slurm-sample-slurm-sample-server-0-0.slurm-service.slurm-operator.svc.cluster.local
-	control := fmt.Sprintf("%s-%s-server-0-0.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, serviceName, cluster.Namespace)
-	database := fmt.Sprintf("%s-%s-database-0-0.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, serviceName, cluster.Namespace)
-	daemon := fmt.Sprintf("%s-%s-daemon-0-0.%s.%s.svc.cluster.local", cluster.Name, cluster.Name, serviceName, cluster.Namespace)
+	// control: slurm-sample-<x>-0-0.slurm-service.slurm-operator.svc.cluster.local
+	control := fmt.Sprintf("%s-s-0-0.%s.%s.svc.cluster.local", cluster.Name, serviceName, cluster.Namespace)
+	database := fmt.Sprintf("%s-db-0-0.%s.%s.svc.cluster.local", cluster.Name, serviceName, cluster.Namespace)
+	daemon := fmt.Sprintf("%s-d-0-0.%s.%s.svc.cluster.local", cluster.Name, serviceName, cluster.Namespace)
 
 	ct := ConfigTemplate{
 		Spec:         cluster.Spec,
