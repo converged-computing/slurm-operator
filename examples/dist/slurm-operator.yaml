@@ -43,6 +43,10 @@ spec:
           spec:
             description: SlurmSpec defines the desired state of slurm
             properties:
+              clusterName:
+                default: linux
+                description: Name of the cluster
+                type: string
               daemon:
                 description: Slurm dbd "daemon"
                 properties:
