@@ -28,6 +28,12 @@ type SlurmSpec struct {
 	// The generic login node
 	Node Node `json:"node"`
 
+	// Name of the cluster
+	//+kubebuilder:default="linux"
+	//+default="linux"
+	//+optional
+	ClusterName string `json:"clusterName"`
+
 	// Slurm dbd "daemon"
 	//+optional
 	Daemon Node `json:"daemon"`
@@ -42,9 +48,9 @@ type SlurmSpec struct {
 	Database Database `json:"database"`
 
 	// Release of slurm to installed (if sbinary not found in PATH)
-	// +kubebuilder:default="19.05.2"
-	// +default="19.05.2"
-	// +optional
+	//+kubebuilder:default="19.05.2"
+	//+default="19.05.2"
+	//+optional
 	SlurmVersion string `json:"slurmVersion,omitempty"`
 
 	// Size of the slurm (1 server + (N-1) nodes)
@@ -179,6 +185,10 @@ func (s *Slurm) Validate() bool {
 	// Ensure we have the default image set
 	if s.Spec.Database.Image == "" {
 		s.Spec.Database.Image = "mariadb:10.10"
+	}
+
+	if s.Spec.ClusterName == "" {
+		s.Spec.ClusterName = "linux"
 	}
 
 	// Along with a username and password

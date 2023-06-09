@@ -91,19 +91,16 @@ func generateScript(cluster *api.Slurm, node api.Node, startTemplate string) (st
 // generateHostlist for a specific size given the cluster namespace and a size
 // slurm-sample-w-0-0.slurm-service.slurm-operator.svc.cluster.local
 func generateHostlist(cluster *api.Slurm) string {
-	hosts := fmt.Sprintf("[%s]", generateRange(int(cluster.WorkerNodes()), 1))
-	return fmt.Sprintf("%s-w-0-%s.%s.%s.svc.cluster.local", cluster.Name, hosts, serviceName, cluster.Namespace)
-}
+	hosts := ""
 
-// generateRange is a shared function to generate a range string
-func generateRange(size int, start int) string {
-	var rangeString string
-	if size == 1 {
-		rangeString = fmt.Sprintf("%d", start)
-	} else {
-		rangeString = fmt.Sprintf("%d-%d", start, size-1)
+	for i := 0; i < int(cluster.WorkerNodes()); i++ {
+		if hosts == "" {
+			hosts = fmt.Sprintf("%s-w-0-%d.%s.%s.svc.cluster.local", cluster.Name, i, serviceName, cluster.Namespace)
+		} else {
+			hosts = fmt.Sprintf("%s,%s-w-0-%d.%s.%s.svc.cluster.local", hosts, cluster.Name, i, serviceName, cluster.Namespace)
+		}
 	}
-	return rangeString
+	return hosts
 }
 
 func generateConfig(cluster *api.Slurm, startTemplate string) (string, error) {

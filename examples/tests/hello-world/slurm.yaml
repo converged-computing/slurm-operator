@@ -10,6 +10,7 @@ metadata:
   name: slurm-sample
   namespace: slurm-operator
 spec:
-  size: 2
+  # One control/login, 2 workers (daemon and database not counted)
+  size: 3
   node:
     command: echo hello world

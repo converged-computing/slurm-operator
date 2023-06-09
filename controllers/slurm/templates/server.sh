@@ -14,7 +14,17 @@ echo "---> Sleeping for slurmdbd to become active before starting slurmctld ..."
 # A bit of a hack for now, need to check that slurmdbd is enabled
 sleep 30
 echo "---> Starting the Slurm Controller Daemon (slurmctld) ..."
-# exec gosu slurm /usr/sbin/slurmctld -Dvvv
-exec gosu slurm /usr/sbin/slurmctld -i -Dvvv
+
+until /usr/bin/sacctmgr --immediate add cluster name={{.Spec.ClusterName}}
+do
+    echo "Cluster {{.Spec.ClusterName}} is not ready... sleeping"
+    sleep 5
+done
+
+
+while true
+do
+   exec gosu slurm /usr/sbin/slurmctld -i -Dvvv
+done
 
 {{template "exit" .}}

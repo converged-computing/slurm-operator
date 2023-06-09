@@ -10,12 +10,12 @@ if [[ -f "/etc/slurm_operator/slurmdbd.conf" ]]; then
     chown slurm /etc/slurm/slurmdbd.conf
 fi
 
+# Extra time for the database to setup
+echo "Sleeping waiting for database..."
+sleep 15
+
 # Initialization commands
 {{ .Node.Commands.Init}} > /dev/null 2>&1
-
-# TODO maybe this should be in service? 
-# TODO maybe cluster name should be variable?
-/usr/bin/sacctmgr --immediate add cluster name=linux
 
 # The working directory should be set by the CRD or the container
 workdir=${PWD}
@@ -27,5 +27,6 @@ mkdir -p ${workdir}
 {{end}}
 
 {{define "exit"}}
+sleep infinity
 {{ if .Spec.Interactive }}sleep infinity{{ end }}
 {{ end }}

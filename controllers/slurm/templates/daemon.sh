@@ -18,6 +18,6 @@ do
 done
 
 echo "-- Database is now active ..."
-exec gosu slurm /usr/sbin/slurmdbd -Dvvv
+/usr/sbin/slurmdbd -Dvvv
 
 {{template "exit" .}}

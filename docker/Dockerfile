@@ -96,4 +96,8 @@ RUN set -x \
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
+EXPOSE 6717
+EXPOSE 6718
+EXPOSE 6719
+
 CMD ["slurmdbd"]
