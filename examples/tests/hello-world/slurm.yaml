@@ -8,7 +8,6 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: slurm-operator
   name: slurm-sample
-  namespace: slurm-operator
 spec:
   # One control/login, 2 workers (daemon and database not counted)
   size: 3

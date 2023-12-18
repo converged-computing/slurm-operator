@@ -18,7 +18,7 @@ import (
 	api "github.com/converged-computing/slurm-operator/api/v1alpha1"
 
 	ctrl "sigs.k8s.io/controller-runtime"
-	jobset "sigs.k8s.io/jobset/api/v1alpha1"
+	jobset "sigs.k8s.io/jobset/api/jobset/v1alpha2"
 )
 
 var (
@@ -45,6 +45,13 @@ func (r *SlurmReconciler) newJobSet(
 			Namespace: cluster.Namespace,
 		},
 		Spec: jobset.JobSetSpec{
+
+			// This would allow pods to be reached by their hostnames!
+			// It doesn't work at the moment, but could if we can specify the service name
+			// <jobSet.name>-<spec.replicatedJob.name>-<job-index>-<pod-index>.<jobSet.name>-<spec.replicatedJob.name>
+			Network: &jobset.Network{
+				EnableDNSHostnames: &enableDNSHostnames,
+			},
 
 			// The job is successful when the broker job finishes with completed (0)
 			//SuccessPolicy: &jobset.SuccessPolicy{
@@ -116,9 +123,6 @@ func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJ
 
 	job := jobset.ReplicatedJob{
 		Name: "db",
-		Network: &jobset.Network{
-			EnableDNSHostnames: &enableDNSHostnames,
-		},
 		Template: batchv1.JobTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "db",
@@ -204,14 +208,6 @@ func (r *SlurmReconciler) getJob(
 
 	job := jobset.ReplicatedJob{
 		Name: entrypoint,
-
-		// This would allow pods to be reached by their hostnames!
-		// It doesn't work at the moment, but could if we can specify the service name
-		// <jobSet.name>-<spec.replicatedJob.name>-<job-index>-<pod-index>.<jobSet.name>-<spec.replicatedJob.name>
-		Network: &jobset.Network{
-			EnableDNSHostnames: &enableDNSHostnames,
-		},
-
 		Template: batchv1.JobTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      entrypoint,

@@ -17,6 +17,7 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"k8s.io/client-go/rest"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,7 +31,7 @@ import (
 
 	api "github.com/converged-computing/slurm-operator/api/v1alpha1"
 	controllers "github.com/converged-computing/slurm-operator/controllers/slurm"
-	jobset "sigs.k8s.io/jobset/api/v1alpha1"
+	jobset "sigs.k8s.io/jobset/api/jobset/v1alpha2"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -64,11 +65,8 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "e113ebf9.flux-framework.org",
@@ -89,6 +87,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	c, err := rest.HTTPClientFor(mgr.GetConfig())
+	if err != nil {
+		setupLog.Error(err, "unable to create REST HTTP client", "controller", c)
+	}
+
 	// Create a RESTful client for the MiniCluster controller. We need this to actually
 	// interact with pods in the cluster!
 	gvk := schema.GroupVersionKind{
@@ -96,7 +99,7 @@ func main() {
 		Version: "v1",
 		Kind:    "Pod",
 	}
-	restClient, err := apiutil.RESTClientForGVK(gvk, false, mgr.GetConfig(), serializer.NewCodecFactory(mgr.GetScheme()))
+	restClient, err := apiutil.RESTClientForGVK(gvk, false, mgr.GetConfig(), serializer.NewCodecFactory(mgr.GetScheme()), c)
 	if err != nil {
 		setupLog.Error(err, "unable to create REST client", "controller", restClient)
 	}
