@@ -1,7 +1,6 @@
 apiVersion: flux-framework.org/v1alpha1
 kind: Slurm
 metadata:
-  labels:
   name: slurm-blue
 spec:
   # One control/login, 2 workers (daemon and database not counted)
