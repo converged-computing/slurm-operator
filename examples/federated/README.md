@@ -151,7 +151,7 @@ I'm not sure what is going to happen.
 ```bash
 kubectl apply -f slurm-1.yaml
 ```
-You can agian look at the daemon (d) and login node (s) and see they also are connecting to the same database,
+You can again look at the daemon (d) and login node (s) and see they also are connecting to the same database,
 and you can submit jobs. You now have two slurm clusters running on the same database.
 
 ```console
