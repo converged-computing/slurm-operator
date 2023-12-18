@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: slurm-db
+  namespace: default
+  # Important: this is needed to be on the same service "slurm-svc"
+  # This means it needs to be the same as network->selector
+  labels:
+    cluster-name: slurm-federation
+spec:
+  containers:
+  - env:
+    - name: MYSQL_RANDOM_ROOT_PASSWORD
+      value: "yes"
+    - name: MYSQL_DATABASE
+      value: slurm_acct_db
+    - name: MYSQL_USER
+      value: slurm
+    - name: MYSQL_PASSWORD
+      value: slurm
+    image: mariadb:10.10
+    imagePullPolicy: IfNotPresent
+    name: db
+
+  # Ensure hostname / set as FQDN - this is also the hostname expected
+  # This should be set to match spec.database.host
+  hostname: slurm-db
+  restartPolicy: OnFailure
+  setHostnameAsFQDN: true
+
+  # Ensure we are on the slurm service
+  subdomain: slurm-svc

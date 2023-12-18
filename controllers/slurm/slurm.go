@@ -43,10 +43,10 @@ func (r *SlurmReconciler) ensureslurm(
 	if err != nil {
 		return result, err
 	}
+	selector := map[string]string{"cluster-name": cluster.SelectorName()}
 
-	// Create headless service for the slurm cluster
-	selector := map[string]string{"cluster-name": cluster.Name}
-	result, err = r.exposeServices(ctx, cluster, serviceName, selector)
+	// Only expose service if we are creating it (not provided the name)
+	result, err = r.exposeServices(ctx, cluster, selector)
 	if err != nil {
 		return result, err
 	}

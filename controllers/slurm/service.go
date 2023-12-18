@@ -24,24 +24,22 @@ import (
 	api "github.com/converged-computing/slurm-operator/api/v1alpha1"
 )
 
-var (
-	serviceName = "slurm-svc"
-)
-
 // exposeService will expose services for job networking (headless)
 func (r *SlurmReconciler) exposeServices(
 	ctx context.Context,
 	cluster *api.Slurm,
-	serviceName string,
 	selector map[string]string,
 ) (ctrl.Result, error) {
+
+	// Get the service name from the cluster
+	serviceName := cluster.ServiceName()
 
 	// This service is for the restful API
 	existing := &corev1.Service{}
 	err := r.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: cluster.Namespace}, existing)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			_, err = r.createHeadlessService(ctx, cluster, serviceName, selector)
+			_, err = r.createHeadlessService(ctx, cluster, selector)
 
 		}
 		return ctrl.Result{}, err
@@ -53,10 +51,10 @@ func (r *SlurmReconciler) exposeServices(
 func (r *SlurmReconciler) createHeadlessService(
 	ctx context.Context,
 	cluster *api.Slurm,
-	serviceName string,
 	selector map[string]string,
 ) (*corev1.Service, error) {
 
+	serviceName := cluster.ServiceName()
 	r.Log.Info("Creating headless service with: ", serviceName, cluster.Namespace)
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: serviceName, Namespace: cluster.Namespace},
@@ -77,12 +75,12 @@ func (r *SlurmReconciler) createHeadlessService(
 func (r *SlurmReconciler) exposeService(
 	ctx context.Context,
 	cluster *api.Slurm,
-	serviceName string,
 	selector map[string]string,
 	ports []int32,
 ) (ctrl.Result, error) {
 
 	// This service is for the restful API
+	serviceName := cluster.ServiceName()
 	existing := &corev1.Service{}
 	err := r.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: cluster.Namespace}, existing)
 	if err != nil {
