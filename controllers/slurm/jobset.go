@@ -83,10 +83,14 @@ func (r *SlurmReconciler) newJobSet(
 	}
 
 	// Create the database service in the jobset
-	dbJob, err := r.getDatabaseJob(cluster)
-	if err != nil {
-		r.Log.Error(err, "There was an error getting the database Replicated Job")
-		return &jobs, err
+	dbJob := jobset.ReplicatedJob{}
+	if cluster.Spec.DeployDatabase {
+		dbJob, err = r.getDatabaseJob(cluster)
+		if err != nil {
+			r.Log.Error(err, "There was an error getting the database Replicated Job")
+			return &jobs, err
+		}
+
 	}
 
 	// Create a cluster (JobSet) with workers (required)
@@ -96,7 +100,11 @@ func (r *SlurmReconciler) newJobSet(
 		r.Log.Error(err, "There was an error getting the worker ReplicatedJob")
 		return &jobs, err
 	}
-	jobs.Spec.ReplicatedJobs = []jobset.ReplicatedJob{serverJob, dbJob, daemonJob, workerJob}
+	if cluster.Spec.DeployDatabase {
+		jobs.Spec.ReplicatedJobs = []jobset.ReplicatedJob{serverJob, dbJob, daemonJob, workerJob}
+	} else {
+		jobs.Spec.ReplicatedJobs = []jobset.ReplicatedJob{serverJob, daemonJob, workerJob}
+	}
 	ctrl.SetControllerReference(cluster, &jobs, r.Scheme)
 	return &jobs, nil
 }
@@ -150,7 +158,7 @@ func (r *SlurmReconciler) getDatabaseJob(cluster *api.Slurm) (jobset.ReplicatedJ
 			},
 			Spec: corev1.PodSpec{
 				// matches the service
-				Subdomain:         serviceName,
+				Subdomain:         cluster.ServiceName(),
 				SetHostnameAsFQDN: &setHostnameAsFQDN,
 				RestartPolicy:     corev1.RestartPolicyOnFailure,
 			},
@@ -236,7 +244,7 @@ func (r *SlurmReconciler) getJob(
 			Spec: corev1.PodSpec{
 				// matches the service
 				SetHostnameAsFQDN: &setHostnameAsFQDN,
-				Subdomain:         serviceName,
+				Subdomain:         cluster.ServiceName(),
 				Volumes:           getVolumes(cluster),
 				RestartPolicy:     corev1.RestartPolicyOnFailure,
 			},

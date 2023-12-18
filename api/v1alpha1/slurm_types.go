@@ -29,28 +29,37 @@ type SlurmSpec struct {
 	Node Node `json:"node"`
 
 	// Name of the cluster
-	//+kubebuilder:default="linux"
-	//+default="linux"
-	//+optional
+	// +kubebuilder:default="linux"
+	// +default="linux"
+	// +optional
 	ClusterName string `json:"clusterName"`
 
 	// Slurm dbd "daemon"
-	//+optional
+	// +optional
 	Daemon Node `json:"daemon"`
 
 	// Worker is the worker node spec, does not include login slurmctl or slurmdbd
 	// Defaults to be same spec as the server
-	//+optional
+	// +optional
 	Worker Node `json:"worker"`
 
 	// Database is the database service spec
 	//+optional
 	Database Database `json:"database"`
 
+	// Deploy the database (or not)
+	// +kubebuilder:default=true
+	// +default=true
+	// +optional
+	DeployDatabase bool `json:"deployDatabase"`
+
+	// Network options (service name and selector)
+	Network Network `json:"network"`
+
 	// Release of slurm to installed (if sbinary not found in PATH)
-	//+kubebuilder:default="19.05.2"
-	//+default="19.05.2"
-	//+optional
+	// +kubebuilder:default="19.05.2"
+	// +default="19.05.2"
+	// +optional
 	SlurmVersion string `json:"slurmVersion,omitempty"`
 
 	// Size of the slurm (1 server + (N-1) nodes)
@@ -70,6 +79,17 @@ type SlurmSpec struct {
 	// Resources include limits and requests
 	// +optional
 	Resources Resource `json:"resources"`
+}
+
+type Network struct {
+
+	// Selector name for network
+	// +optional
+	Selector string `json:"selector"`
+
+	// Service name (e.g., helpful if already exists)
+	// +optional
+	ServiceName string `json:"serviceName"`
 }
 
 // Database corresponds to the slurm database to use
@@ -94,6 +114,12 @@ type Database struct {
 	// +default="slurm"
 	// +optional
 	User string `json:"user"`
+
+	// Custom database host
+	// This should only be set if you are deploying your own database
+	// and DeployDatabase is false
+	// +optional
+	Host string `json:"host"`
 
 	// Database password
 	// +kubebuilder:default="password"
@@ -175,6 +201,26 @@ type Resources struct {
 }
 
 type Resource map[string]intstr.IntOrString
+
+// ServiceName is the service name for the headless service :)
+func (s *Slurm) ServiceName() string {
+	serviceName := fmt.Sprintf("%s-svc", s.Name)
+	if s.Spec.Network.ServiceName != "" {
+		serviceName = s.Spec.Network.ServiceName
+	}
+	return serviceName
+}
+
+// SelectorName determines the name for the selector for the headless service
+func (s *Slurm) SelectorName() string {
+	// The service name is either user defined or matches the job name
+	// Create headless service for the slurm cluster
+	selectorName := s.Name
+	if s.Spec.Network.Selector != "" {
+		selectorName = s.Spec.Network.Selector
+	}
+	return selectorName
+}
 
 // Validate the slurm
 func (s *Slurm) Validate() bool {

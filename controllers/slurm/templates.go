@@ -93,6 +93,7 @@ func generateScript(cluster *api.Slurm, node api.Node, startTemplate string) (st
 func generateHostlist(cluster *api.Slurm) string {
 	hosts := ""
 
+	serviceName := cluster.ServiceName()
 	for i := 0; i < int(cluster.WorkerNodes()); i++ {
 		if hosts == "" {
 			hosts = fmt.Sprintf("%s-w-0-%d.%s.%s.svc.cluster.local", cluster.Name, i, serviceName, cluster.Namespace)
@@ -105,11 +106,18 @@ func generateHostlist(cluster *api.Slurm) string {
 
 func generateConfig(cluster *api.Slurm, startTemplate string) (string, error) {
 
+	// Get common service name
+	serviceName := cluster.ServiceName()
+
 	// control: slurm-sample-<x>-0-0.slurm-service.slurm-operator.svc.cluster.local
 	control := fmt.Sprintf("%s-s-0-0.%s.%s.svc.cluster.local", cluster.Name, serviceName, cluster.Namespace)
 	database := fmt.Sprintf("%s-db-0-0.%s.%s.svc.cluster.local", cluster.Name, serviceName, cluster.Namespace)
 	daemon := fmt.Sprintf("%s-d-0-0.%s.%s.svc.cluster.local", cluster.Name, serviceName, cluster.Namespace)
 
+	// If the cluster has a pre-determined database host, use it instead
+	if cluster.Spec.Database.Host != "" {
+		database = cluster.Spec.Database.Host
+	}
 	ct := ConfigTemplate{
 		Spec:         cluster.Spec,
 		ControlHost:  control,

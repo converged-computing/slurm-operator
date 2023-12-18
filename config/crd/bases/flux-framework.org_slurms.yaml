@@ -112,6 +112,10 @@ spec:
                       database, be sure to set them all Username and password are
                       set separately below!
                     type: object
+                  host:
+                    description: Custom database host This should only be set if you
+                      are deploying your own database and DeployDatabase is false
+                    type: string
                   image:
                     default: mariadb:10.10
                     description: Image to use for the database We assume we don't
@@ -135,9 +139,23 @@ spec:
                   be zero or job won't start
                 format: int64
                 type: integer
+              deployDatabase:
+                default: true
+                description: Deploy the database (or not)
+                type: boolean
               interactive:
                 description: Interactive mode keeps the cluster running
                 type: boolean
+              network:
+                description: Network options (service name and selector)
+                properties:
+                  selector:
+                    description: Selector name for network
+                    type: string
+                  serviceName:
+                    description: Service name (e.g., helpful if already exists)
+                    type: string
+                type: object
               node:
                 description: The generic login node
                 properties:
@@ -273,6 +291,7 @@ spec:
                     type: string
                 type: object
             required:
+            - network
             - node
             - size
             type: object

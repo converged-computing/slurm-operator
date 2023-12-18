@@ -1,0 +1,29 @@
+apiVersion: flux-framework.org/v1alpha1
+kind: Slurm
+metadata:
+  name: slurm-pink
+spec:
+  # One control/login, 2 workers (daemon and database not counted)
+  size: 3
+
+  # IMPORTANT: these need to be unique! If you destroy and re-create a cluster,
+  # it will already be registered (and second up will not register again)
+  clusterName: pink
+
+  # Make the service name dumb and short
+  # The selector needs to match the database.yaml
+  network:
+    serviceName: slurm-svc
+    selector: slurm-federation
+
+  # Don't deploy the database
+  deployDatabase: false
+  database:
+    # This should be the FQDN of the database on the same network
+    host: slurm-db.slurm-svc.default.svc.cluster.local
+    password: slurm
+    databaseName: slurm_acct_db
+    user: slurm
+
+  node:
+    command: echo hello world
