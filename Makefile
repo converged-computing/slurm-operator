@@ -206,6 +206,11 @@ test-deploy: manifests kustomize
 	$(KUSTOMIZE) build config/default > examples/dist/slurm-operator-dev.yaml
 	sed -i 's/        imagePullPolicy: IfNotPresent/        imagePullPolicy: Always/' examples/dist/slurm-operator-dev.yaml
 
+.PHONY: test-deploy-recreate
+test-deploy-recreate: test-deploy
+	kubectl delete -f ./examples/dist/slurm-operator-dev.yaml || echo "Already deleted"
+	kubectl apply -f ./examples/dist/slurm-operator-dev.yaml
+
 .PHONY: list
 list:
 	kubectl get -n slurm-operator pods
