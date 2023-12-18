@@ -167,7 +167,83 @@ slurm-pink-w-0-0-69zfx   1/1     Running   0          2m32s
 slurm-pink-w-0-1-n6ggh   1/1     Running   0          2m32s
 ```
 
-TODO next: test the random federation commands and play around!
+## 5. Test Federation
+
+Now let's follow the instructions [from here](https://slurm.schedmd.com/federation.html#configuration) to create and register the clusters on the federation! 
+Let's shell into slurm blue to try interaction there first.
+
+```bash
+$ kubectl exec -it slurm-blue-s-0-0-rt7lj bash
+# which sacctmgr 
+/usr/bin/sacctmgr
+```
+
+Let's create the federation "crayon"
+
+```bash
+sacctmgr add federation crayon clusters=blue,pink
+```
+```console
+[root@slurm-blue-s-0-0 /]# sacctmgr add federation crayon clusters=blue,pink
+ Adding Federation(s)
+  crayon
+ Settings
+  Cluster       = blue
+  Cluster       = pink
+Would you like to commit changes? (You have 30 seconds to decide)
+(N/y): y
+```
+
+Show your federation! First with `saccctmgr`:
+
+```bash
+[root@slurm-blue-s-0-0 /]# sacctmgr show federation crayon
+```
+```console
+Federation    Cluster ID             Features     FedState 
+---------- ---------- -- -------------------- ------------ 
+    crayon       blue  1                            ACTIVE 
+    crayon       pink  2                            ACTIVE 
+```
+
+Now with `scontrol`:
+
+```bash
+[root@slurm-blue-s-0-0 /]# scontrol show federation
+```
+```console
+Federation: crayon
+Self:       blue:10.244.0.60:6817 ID:1 FedState:ACTIVE Features:
+Sibling:    pink:10.244.0.64:6817 ID:2 FedState:ACTIVE Features: PersistConnSend/Recv:Yes/Yes Synced:Yes
+```
+
+And now submit a job to both - where will it go?
+
+```bash
+srun -N 2 -Mblue,pink hostname
+```
+Try submitting to each separately, and then monitoring from the same spot.
+
+```bash
+[root@slurm-blue-s-0-0 /]# sbatch -N 2 -Mblue sleep 100
+Submitted batch job 67108874 on cluster blue
+[root@slurm-blue-s-0-0 /]# sbatch -N 2 -Mpink sleep 100
+Submitted batch job 134217731 on cluster pink
+```
+```bash
+[root@slurm-blue-s-0-0 /]# squeue -Mblue,pink
+```
+```console
+CLUSTER: blue
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          67108874    normal    sleep     root  R       0:09      2 slurm-blue-w-0-0.slurm-svc.default.svc.cluster.local,slurm-blue-w-0-1.slurm-svc.default.svc.cluster.local
+
+CLUSTER: pink
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+         134217731    normal    sleep     root  R       0:04      2 slurm-pink-w-0-0.slurm-svc.default.svc.cluster.local,slurm-pink-w-0-1.slurm-svc.default.svc.cluster.local
+```
+
+That's pretty neat! I think I've accomplished everything I wanted to this weekend for federated slurm. Cheers!
 
 ## 5. Cleanup
 
