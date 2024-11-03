@@ -39,8 +39,6 @@ RUN set -ex \
     && yum clean all \
     && rm -rf /var/cache/yum
 
-RUN alternatives --set python /usr/bin/python3
-
 RUN pip3 install Cython nose
 
 RUN set -ex \
