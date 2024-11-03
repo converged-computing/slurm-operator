@@ -14,7 +14,7 @@ RUN set -ex \
     && yum makecache \
     && yum -y update \
     && yum -y install dnf-plugins-core \
-    && yum config-manager --set-enabled powertools \
+    && yum config-manager --enable crb \
     && yum -y install \
        wget \
        bzip2 \
