@@ -1,10 +1,10 @@
-FROM rockylinux:8
+FROM rockylinux:9
 
 # From https://github.com/giovtorres/slurm-docker-cluster/blob/52b5f9e5a9a7b149900404077e377e8daedf1a8c/Dockerfile
 # Moved here to have automated build
 LABEL org.opencontainers.image.source="https://github.com/converged-computing/slurm-operator" \
       org.opencontainers.image.title="slurm-operator" \
-      org.opencontainers.image.description="Slurm in Kubernetes on Rocky Linux 8" \
+      org.opencontainers.image.description="Slurm in Kubernetes on Rocky Linux 9" \
       maintainer="Vanessa Sochat"
 
 ARG SLURM_TAG=slurm-21-08-6-1
@@ -14,7 +14,7 @@ RUN set -ex \
     && yum makecache \
     && yum -y update \
     && yum -y install dnf-plugins-core \
-    && yum config-manager --set-enabled powertools \
+    && yum config-manager --enable crb \
     && yum -y install \
        wget \
        bzip2 \
@@ -38,8 +38,6 @@ RUN set -ex \
        json-c-devel \
     && yum clean all \
     && rm -rf /var/cache/yum
-
-RUN alternatives --set python /usr/bin/python3
 
 RUN pip3 install Cython nose
 
