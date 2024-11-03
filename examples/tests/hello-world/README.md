@@ -9,19 +9,15 @@ $ kind create cluster
 You'll need to install the jobset API, which eventually will be added to Kubernetes proper (but is not yet!)
 
 ```bash
-VERSION=v0.2.0
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/jobset/releases/download/$VERSION/manifests.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/jobset/releases/download/v0.7.0/manifests.yaml
 ```
 
-or development version (this is what I did) - be careful, this would be release v0.3.0:
+Install the Slurl operator:
 
 ```bash
-kubectl apply --server-side -k github.com/kubernetes-sigs/jobset/config/default?ref=main
-```
+# From GitHub
+kubectl apply -f https://raw.githubusercontent.com/converged-computing/slurm-operator/refs/heads/main/examples/dist/slurm-operator.yaml
 
-Install the SLURM operator:
-
-```bash
 # Build and push the image, and generate the examples/dist/slurm-operator-dev.yaml
 make test-deploy-recreate DEVIMG=<some-registry>/slurm-operator:tag
 
@@ -38,7 +34,7 @@ kubectl logs -n slurm-operator-system slurm-operator-controller-manager-6f694557
 Wait until you see the operator running. Create a "hello-world" interactive cluster:
 
 ```bash
-$ kubectl apply -f ./slurm.yaml 
+kubectl apply -f ./slurm.yaml 
 ```
 
 Wait until all of the containers are running:
@@ -56,7 +52,7 @@ slurm-sample-w-0-1-f25rp    1/1     Running   0          4m27s    # this is work
 You'll first want to see the database connect successfully:
 
 ```bash
-$ kubectl logs slurm-sample-d-0-0-45trk -f
+kubectl logs slurm-sample-d-0-0-45trk -f
 ```
 ```console
 slurmdbd: debug2: StorageType       = accounting_storage/mysql
@@ -85,7 +81,7 @@ It normally would happen via a node reboot but we instead run it in a loop (and 
 found this step a bit slow.
 
 ```bash
-kubectl logs -n slurm-operaslurm-sample-s-0-0-xj5zr -f
+kubectl logs slurm-sample-s-0-0-xj5zr -f
 ```
 ```bash
 Hello, I am a server with slurm-sample-s-0-0.slurm-svc.slurm-operator.svc.cluster.local

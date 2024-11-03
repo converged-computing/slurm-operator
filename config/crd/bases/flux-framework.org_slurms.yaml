@@ -3,8 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.11.1
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: slurms.flux-framework.org
 spec:
   group: flux-framework.org
@@ -21,14 +20,19 @@ spec:
         description: Slurm is the Schema for the slurms API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -62,7 +66,8 @@ spec:
                     description: Image to use for slurm
                     type: string
                   ports:
-                    description: Ports to be exposed to other containers in the cluster
+                    description: |-
+                      Ports to be exposed to other containers in the cluster
                       We take a single list of integers and map to the same
                     items:
                       format: int32
@@ -107,19 +112,23 @@ spec:
                   environment:
                     additionalProperties:
                       type: string
-                    description: Default Environment, will be set if not defined here
-                      Note that by defalt we set MYSQL_* envars. If you use a different
-                      database, be sure to set them all Username and password are
-                      set separately below!
+                    description: |-
+                      Default Environment, will be set if not defined here
+                      Note that by defalt we set MYSQL_* envars.
+                      If you use a different database, be sure to set them all
+                      Username and password are set separately below!
                     type: object
                   host:
-                    description: Custom database host This should only be set if you
-                      are deploying your own database and DeployDatabase is false
+                    description: |-
+                      Custom database host
+                      This should only be set if you are deploying your own database
+                      and DeployDatabase is false
                     type: string
                   image:
                     default: mariadb:10.10
-                    description: Image to use for the database We assume we don't
-                      need to tweak the command
+                    description: |-
+                      Image to use for the database
+                      We assume we don't need to tweak the command
                     type: string
                   password:
                     default: password
@@ -135,8 +144,9 @@ spec:
                 type: object
               deadlineSeconds:
                 default: 31500000
-                description: Time limit for the job Approximately one year. This cannot
-                  be zero or job won't start
+                description: |-
+                  Time limit for the job
+                  Approximately one year. This cannot be zero or job won't start
                 format: int64
                 type: integer
               deployDatabase:
@@ -179,7 +189,8 @@ spec:
                     description: Image to use for slurm
                     type: string
                   ports:
-                    description: Ports to be exposed to other containers in the cluster
+                    description: |-
+                      Ports to be exposed to other containers in the cluster
                       We take a single list of integers and map to the same
                     items:
                       format: int32
@@ -232,8 +243,9 @@ spec:
                   PATH)
                 type: string
               worker:
-                description: Worker is the worker node spec, does not include login
-                  slurmctl or slurmdbd Defaults to be same spec as the server
+                description: |-
+                  Worker is the worker node spec, does not include login slurmctl or slurmdbd
+                  Defaults to be same spec as the server
                 properties:
                   command:
                     description: Command will be honored by a server node
@@ -255,7 +267,8 @@ spec:
                     description: Image to use for slurm
                     type: string
                   ports:
-                    description: Ports to be exposed to other containers in the cluster
+                    description: |-
+                      Ports to be exposed to other containers in the cluster
                       We take a single list of integers and map to the same
                     items:
                       format: int32
@@ -291,7 +304,6 @@ spec:
                     type: string
                 type: object
             required:
-            - network
             - node
             - size
             type: object

@@ -12,13 +12,16 @@ kind create cluster
 You'll need to install the jobset API, which eventually will be added to Kubernetes proper (but is not yet!)
 
 ```bash
-VERSION=v0.2.0
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/jobset/releases/download/$VERSION/manifests.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/jobset/releases/download/v0.7.0/manifests.yaml
 ```
 
 From the root, install the slurm operator:
 
 ```bash
+# From GitHub
+kubectl apply -f https://raw.githubusercontent.com/converged-computing/slurm-operator/refs/heads/main/examples/dist/slurm-operator.yaml
+
+# From here
 make test-deploy-recreate
 ```
 

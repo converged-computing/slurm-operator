@@ -843,8 +843,8 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: ghcr.io/converged-computing/slurm-operator:latest
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/converged-computing/slurm-operator:test
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /healthz
