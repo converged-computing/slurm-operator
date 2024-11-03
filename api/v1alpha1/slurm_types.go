@@ -54,6 +54,7 @@ type SlurmSpec struct {
 	DeployDatabase bool `json:"deployDatabase"`
 
 	// Network options (service name and selector)
+	// +optional
 	Network Network `json:"network"`
 
 	// Release of slurm to installed (if sbinary not found in PATH)
