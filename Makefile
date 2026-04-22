@@ -48,6 +48,7 @@ endif
 
 # Image URL to use all building/pushing image targets
 IMG ?= ghcr.io/converged-computing/slurm-operator:latest
+ARMIMG ?= ghcr.io/converged-computing/slurm-operator:arm
 
 # Testing image (for development mostly)
 DEVIMG ?= ghcr.io/converged-computing/slurm-operator:test
@@ -125,6 +126,17 @@ run: manifests generate fmt vet ## Run a controller from your host.
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
 	docker build -t ${IMG} .
+
+.PHONY: arm-build
+arm-build: test ## Build docker image with the manager.
+	docker buildx build --platform linux/arm64 -t ${ARMIMG} .
+
+.PHONY: arm-deploy
+arm-deploy: manifests kustomize
+	docker buildx build --platform linux/arm64 --push -t ${ARMIMG} .
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${ARMIMG}
+	$(KUSTOMIZE) build config/default > examples/dist/slurm-operator-arm.yaml
+
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.

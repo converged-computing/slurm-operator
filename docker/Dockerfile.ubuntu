@@ -1,0 +1,96 @@
+FROM ubuntu:24.04
+
+LABEL org.opencontainers.image.source="https://github.com/converged-computing/slurm-operator" \
+      org.opencontainers.image.title="slurm-operator" \
+      org.opencontainers.image.description="Slurm in Kubernetes on Ubuntu" \
+      maintainer="Vanessa Sochat"
+
+ARG SLURM_TAG=slurm-21-08-6-1
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+       wget \
+       bzip2 \
+       perl \
+       gcc \
+       g++ \
+       git \
+       gnupg \
+       make \
+       munge \
+       libmunge-dev \
+       python3-dev \
+       python3-pip \
+       python3-setuptools \
+       mariadb-server \
+       libmariadb-dev \
+       libmariadb-dev-compat \
+       psmisc \
+       bash-completion \
+       vim \
+       libhttp-parser-dev \
+       libjson-c-dev \
+       build-essential \
+       pkg-config \
+       gosu \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Note: Ubuntu 24.04 uses PEP 668 (externally managed environments). 
+# If pip install fails, use --break-system-packages or install in a venv.
+RUN pip3 install --break-system-packages Cython nose
+
+RUN set -x \
+    && git clone -b ${SLURM_TAG} --single-branch --depth=1 https://github.com/SchedMD/slurm.git \
+    && cd slurm \
+    && ./configure --enable-debug --prefix=/usr --sysconfdir=/etc/slurm \
+        --with-mysql_config=/usr/bin --libdir=/usr/lib \
+    && make install \
+    && install -D -m644 etc/cgroup.conf.example /etc/slurm/cgroup.conf.example \
+    && install -D -m644 etc/slurm.conf.example /etc/slurm/slurm.conf.example \
+    && install -D -m644 etc/slurmdbd.conf.example /etc/slurm/slurmdbd.conf.example \
+    && install -D -m644 contribs/slurm_completion_help/slurm_completion.sh /etc/profile.d/slurm_completion.sh \
+    && cd ../ \
+    && rm -rf slurm \
+    && groupadd -r --gid=990 slurm \
+    && useradd -r -g slurm --uid=990 slurm \
+    && mkdir -p /etc/sysconfig/slurm \
+        /var/spool/slurmd \
+        /var/run/slurmd \
+        /var/run/slurmdbd \
+        /var/lib/slurmd \
+        /var/log/slurm \
+        /data \
+    && touch /var/lib/slurmd/node_state \
+        /var/lib/slurmd/front_end_state \
+        /var/lib/slurmd/job_state \
+        /var/lib/slurmd/resv_state \
+        /var/lib/slurmd/trigger_state \
+        /var/lib/slurmd/assoc_mgr_state \
+        /var/lib/slurmd/assoc_usage \
+        /var/lib/slurmd/qos_usage \
+        /var/lib/slurmd/fed_mgr_state \
+    && chown -R slurm:slurm /var/lib/slurmd /var/run/slurmd /var/run/slurmdbd /var/log/slurm \
+    && /usr/sbin/mungekey --create --force --keyfile /etc/munge/munge.key \
+    && chown munge:munge /etc/munge/munge.key \
+    && chmod 400 /etc/munge/munge.key
+
+# These will be overridden by your local files
+COPY slurm.conf /etc/slurm/slurm.conf
+COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
+RUN set -x \
+    && chown slurm:slurm /etc/slurm/slurmdbd.conf \
+    && chmod 600 /etc/slurm/slurmdbd.conf
+
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+EXPOSE 6717
+EXPOSE 6718
+EXPOSE 6719
+
+CMD ["slurmdbd"]

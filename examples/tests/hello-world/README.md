@@ -3,7 +3,7 @@
 Create a cluster with kind:
 
 ```bash
-$ kind create cluster
+kind create cluster
 ```
 
 You'll need to install the jobset API, which eventually will be added to Kubernetes proper (but is not yet!)
@@ -12,7 +12,7 @@ You'll need to install the jobset API, which eventually will be added to Kuberne
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/jobset/releases/download/v0.7.0/manifests.yaml
 ```
 
-Install the Slurl operator:
+Install the Slurm operator:
 
 ```bash
 # From GitHub
@@ -121,7 +121,7 @@ Once you've verified the controller is running, you can shell into the control l
 kubectl exec -it slurm-sample-s-0-0-xj5zr bash
 ```
 ```bash
-$ sinfo
+sinfo
 ```
 ```console
 PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
