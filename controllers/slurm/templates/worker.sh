@@ -2,12 +2,11 @@
 
 echo "Hello, I am a worker with $(hostname)"
 
-# Shared logic to install hq
+# Shared logic
 {{template "init" .}}
 
 # This is a worker node
-echo "---> Starting the MUNGE Authentication service (munged) ..."
-gosu munge /usr/sbin/munged
+{{ template "munge" .}}
 
 echo "---> Waiting for slurmctld to become active before starting slurmd..."
 sleep 30
