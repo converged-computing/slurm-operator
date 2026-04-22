@@ -7,65 +7,18 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - events
-  verbs:
-  - create
-  - update
-  - watch
-- apiGroups:
+  - ""
   - batch
-  resources:
-  - jobs
-  verbs:
-  - create
-  - delete
-  - exec
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - batch
-  resources:
-  - jobs/status
-  verbs:
-  - create
-  - delete
-  - exec
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - ""
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - batch
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - configmaps
+  - jobs
+  - persistentvolumeclaims
+  - persistentvolumes
+  - pods
+  - pods/exec
+  - pods/log
+  - secrets
+  - services
+  - statefulsets
   verbs:
   - create
   - delete
@@ -80,16 +33,6 @@ rules:
   - events
   verbs:
   - create
-  - patch
-- apiGroups:
-  - ""
-  resources:
-  - jobs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
   - patch
   - update
   - watch
@@ -101,96 +44,14 @@ rules:
   - create
   - patch
 - apiGroups:
-  - ""
+  - batch
   resources:
-  - persistentvolumeclaims
+  - jobs
+  - jobs/status
   verbs:
   - create
   - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods/exec
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods/log
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - statefulsets
-  verbs:
-  - create
-  - delete
+  - exec
   - get
   - list
   - patch

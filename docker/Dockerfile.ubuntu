@@ -1,5 +1,8 @@
 FROM ubuntu:24.04
 
+# for arm, hpc7g on aws 4/22/2026
+# docker build --network=host -f Dockerfile.ubuntu -t ghcr.io/converged-computing/slurm:ubuntu-arm-hpc7g .
+
 LABEL org.opencontainers.image.source="https://github.com/converged-computing/slurm-operator" \
       org.opencontainers.image.title="slurm-operator" \
       org.opencontainers.image.description="Slurm in Kubernetes on Ubuntu" \

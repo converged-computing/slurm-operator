@@ -1,5 +1,9 @@
 FROM rockylinux:9
 
+# docker build --network=host -t ghcr.io/converged-computing/slurm:arm-hpc7g .
+ARG ARCH=amd64
+ENV ARCH=$ARCH
+
 # From https://github.com/giovtorres/slurm-docker-cluster/blob/52b5f9e5a9a7b149900404077e377e8daedf1a8c/Dockerfile
 # Moved here to have automated build
 LABEL org.opencontainers.image.source="https://github.com/converged-computing/slurm-operator" \
@@ -42,8 +46,8 @@ RUN set -ex \
 RUN pip3 install Cython nose
 
 RUN set -ex \
-    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-amd64" \
-    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-amd64.asc" \
+    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-${ARCH}" \
+    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-${ARCH}.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
     && gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
     && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \

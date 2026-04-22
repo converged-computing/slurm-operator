@@ -704,7 +704,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: ghcr.io/converged-computing/slurm-operator:latest
+        image: ghcr.io/converged-computing/slurm-operator:arm
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
