@@ -30,3 +30,19 @@ mkdir -p ${workdir}
 sleep infinity
 {{ if .Spec.Interactive }}sleep infinity{{ end }}
 {{ end }}
+
+{{ define "munge"}}
+echo "---> Starting the MUNGE Authentication service (munged) ..."
+
+# Create the missing directory
+mkdir -p /run/munge
+
+# Set ownership so the munge user can write the socket
+chown -R munge:munge /run/munge
+
+# Start the daemon manually
+gosu munge /usr/sbin/munged --force
+
+# Verify it works
+munge -n | unmunge
+{{end}}

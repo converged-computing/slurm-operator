@@ -63,7 +63,7 @@ type SlurmSpec struct {
 	// +optional
 	SlurmVersion string `json:"slurmVersion,omitempty"`
 
-	// Size of the slurm (1 server + (N-1) nodes)
+	// Size is number of worker nodes
 	Size int32 `json:"size"`
 
 	// Interactive mode keeps the cluster running
@@ -168,6 +168,11 @@ type Node struct {
 	// +optional
 	WorkingDir string `json:"workingDir,omitempty"`
 
+	// Node specification. Leave empty for testing cluster
+	// This does not include hostlist (generated automatically)
+	// +optional
+	Nodespec string `json:"nodespec,omitempty"`
+
 	// PullAlways will always pull the container
 	// +optional
 	PullAlways bool `json:"pullAlways"`
@@ -225,8 +230,8 @@ func (s *Slurm) SelectorName() string {
 
 // Validate the slurm
 func (s *Slurm) Validate() bool {
-	if s.WorkerNodes() < 1 {
-		fmt.Printf("😥️ Slurm cluster must have at least one worker node, Size >= 2.\n")
+	if s.Spec.Size < 1 {
+		fmt.Printf("😥️ Slurm cluster must have 1 or more worker nodes.\n")
 		return false
 	}
 	// Ensure we have the default image set
@@ -238,6 +243,10 @@ func (s *Slurm) Validate() bool {
 		s.Spec.ClusterName = "linux"
 	}
 
+	// Default node spec
+	if s.Spec.Node.Nodespec == "" {
+		s.Spec.Node.Nodespec = "RealMemory=1000 CPUs=1 State=UNKNOWN"
+	}
 	// Along with a username and password
 	if s.Spec.Database.DatabaseName == "" {
 		s.Spec.Database.DatabaseName = "slurm_acct_db"
@@ -247,12 +256,6 @@ func (s *Slurm) Validate() bool {
 		s.Spec.Database.User = "slurm"
 	}
 	return true
-}
-
-// WorkerNodes returns the number of worker nodes
-// At this point we've already validated size is >= 1
-func (s *Slurm) WorkerNodes() int32 {
-	return s.Spec.Size - 1
 }
 
 // WorkerNode returns the worker node (if defined) or falls back to the server

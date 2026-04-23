@@ -1,7 +1,7 @@
 name: test slurm-operator
 
 on:
-  pull_request: []
+  pull_request: {}
 
 jobs:
   formatting:
@@ -27,7 +27,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v3
       with:
-        go-version: ^1.23
+        go-version: ^1.24
     - name: fmt check
       run: make fmt
 
@@ -60,7 +60,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v3
       with:
-        go-version: ^1.23
+        go-version: ^1.24
 
     - name: Start minikube
       uses: medyagh/setup-minikube@697f2b7aaed5f70bf2a94ee21a4ec3dde7b12f92 # v0.0.9

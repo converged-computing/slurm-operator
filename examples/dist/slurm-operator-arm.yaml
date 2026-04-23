@@ -256,7 +256,7 @@ spec:
                 description: Resources include limits and requests
                 type: object
               size:
-                description: Size is number of worker nodes
+                description: Size of the slurm (1 server + (N-1) nodes)
                 format: int32
                 type: integer
               slurmVersion:
@@ -678,7 +678,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: ghcr.io/converged-computing/slurm-operator:latest
+        image: ghcr.io/converged-computing/slurm-operator:arm
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

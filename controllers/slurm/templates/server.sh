@@ -5,9 +5,7 @@ echo "Hello, I am a server with $(hostname)"
 # This script handles shared start logic
 {{template "init" .}}
 
-# Default entrypoint with slurmctld, this is like a login node
-echo "---> Starting the MUNGE Authentication service (munged) ..."
-gosu munge /usr/sbin/munged
+{{template "munge" .}}
 
 echo "---> Sleeping for slurmdbd to become active before starting slurmctld ..."
 

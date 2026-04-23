@@ -50,6 +50,7 @@ type ConfigTemplate struct {
 	ControlHost  string
 	DatabaseHost string
 	Hostlist     string
+	Nodespec     string
 }
 
 // combineTemplates into one "start"
@@ -94,7 +95,7 @@ func generateHostlist(cluster *api.Slurm) string {
 	hosts := ""
 
 	serviceName := cluster.ServiceName()
-	for i := 0; i < int(cluster.WorkerNodes()); i++ {
+	for i := 0; i < int(cluster.Spec.Size); i++ {
 		if hosts == "" {
 			hosts = fmt.Sprintf("%s-w-0-%d.%s.%s.svc.cluster.local", cluster.Name, i, serviceName, cluster.Namespace)
 		} else {
@@ -124,6 +125,7 @@ func generateConfig(cluster *api.Slurm, startTemplate string) (string, error) {
 		DatabaseHost: database,
 		DaemonHost:   daemon,
 		Hostlist:     generateHostlist(cluster),
+		Nodespec:     cluster.Spec.Worker.Nodespec,
 	}
 
 	// Wrap the named template to identify it later

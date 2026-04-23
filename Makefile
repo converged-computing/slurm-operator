@@ -48,6 +48,7 @@ endif
 
 # Image URL to use all building/pushing image targets
 IMG ?= ghcr.io/converged-computing/slurm-operator:latest
+ARMIMG ?= ghcr.io/converged-computing/slurm-operator:arm
 
 # Testing image (for development mostly)
 DEVIMG ?= ghcr.io/converged-computing/slurm-operator:test
@@ -125,6 +126,17 @@ run: manifests generate fmt vet ## Run a controller from your host.
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
 	docker build -t ${IMG} .
+
+.PHONY: arm-build
+arm-build: test ## Build docker image with the manager.
+	docker buildx build ARCH=arm64 --platform linux/arm64 -t ${ARMIMG} .
+
+.PHONY: arm-deploy
+arm-deploy: manifests kustomize
+	docker buildx build --platform linux/arm64 --build-arg ARCH=arm64 --push -t ${ARMIMG} .
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${ARMIMG}
+	$(KUSTOMIZE) build config/default > examples/dist/slurm-operator-arm.yaml
+
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -206,6 +218,12 @@ test-deploy: manifests kustomize
 	$(KUSTOMIZE) build config/default > examples/dist/slurm-operator-dev.yaml
 	sed -i 's/        imagePullPolicy: IfNotPresent/        imagePullPolicy: Always/' examples/dist/slurm-operator-dev.yaml
 
+
+.PHONY: build-config-arm
+build-config-arm: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${ARMIMG}
+	$(KUSTOMIZE) build config/default > examples/dist/slurm-operator-arm.yaml
+
 .PHONY: test-deploy-recreate
 test-deploy-recreate: test-deploy
 	kubectl delete -f ./examples/dist/slurm-operator-dev.yaml || echo "Already deleted"
@@ -217,7 +235,7 @@ list:
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
-CONTROLLER_TOOLS_VERSION ?= v0.14.0
+CONTROLLER_TOOLS_VERSION ?= v0.19.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize

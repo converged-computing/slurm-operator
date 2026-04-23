@@ -5,8 +5,7 @@ echo "Hello, I am a worker with $(hostname)"
 # Shared logic to install hq
 {{template "init" .}}
 
-echo "---> Starting the MUNGE Authentication service (munged) ..."
-gosu munge /usr/sbin/munged
+{{template "munge" .}}
 
 echo "---> Starting the Slurm Database Daemon (slurmdbd) ..."
 

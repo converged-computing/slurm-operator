@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: slurms.flux-framework.org
 spec:
   group: flux-framework.org
@@ -64,6 +64,11 @@ spec:
                   image:
                     default: ghcr.io/converged-computing/slurm
                     description: Image to use for slurm
+                    type: string
+                  nodespec:
+                    description: |-
+                      Node specification. Leave empty for testing cluster
+                      This does not include hostlist (generated automatically)
                     type: string
                   ports:
                     description: |-
@@ -188,6 +193,11 @@ spec:
                     default: ghcr.io/converged-computing/slurm
                     description: Image to use for slurm
                     type: string
+                  nodespec:
+                    description: |-
+                      Node specification. Leave empty for testing cluster
+                      This does not include hostlist (generated automatically)
+                    type: string
                   ports:
                     description: |-
                       Ports to be exposed to other containers in the cluster
@@ -234,7 +244,7 @@ spec:
                 description: Resources include limits and requests
                 type: object
               size:
-                description: Size of the slurm (1 server + (N-1) nodes)
+                description: Size is number of worker nodes
                 format: int32
                 type: integer
               slurmVersion:
@@ -265,6 +275,11 @@ spec:
                   image:
                     default: ghcr.io/converged-computing/slurm
                     description: Image to use for slurm
+                    type: string
+                  nodespec:
+                    description: |-
+                      Node specification. Leave empty for testing cluster
+                      This does not include hostlist (generated automatically)
                     type: string
                   ports:
                     description: |-
