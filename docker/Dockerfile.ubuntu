@@ -40,6 +40,8 @@ RUN set -ex \
        build-essential \
        pkg-config \
        gosu \
+       libhwloc-dev \
+       libevent-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -48,10 +50,25 @@ RUN set -ex \
 RUN pip3 install --break-system-packages Cython nose
 
 RUN set -x \
+    && wget https://github.com/openpmix/openpmix/releases/download/v3.2.3/pmix-3.2.3.tar.gz \
+    && tar -xvf pmix-3.2.3.tar.gz \
+    && cd pmix-3.2.3 \
+    && ./configure --prefix=/opt/pmix --disable-static \
+    && make -j$(nproc) install \
+    && cd .. && rm -rf pmix-3.2.3*
+
+RUN set -x \
     && git clone -b ${SLURM_TAG} --single-branch --depth=1 https://github.com/SchedMD/slurm.git \
-    && cd slurm \
+    && export CFLAGS="-I/usr/include" \
+    && export LDFLAGS="-L/usr/lib/$(uname -m)-linux-gnu" \
+    && cd ./slurm \
     && ./configure --enable-debug --prefix=/usr --sysconfdir=/etc/slurm \
-        --with-mysql_config=/usr/bin --libdir=/usr/lib \
+        --with-mysql_config=/usr/bin \
+        --libdir=/usr/lib \
+        --with-pmix=/opt/pmix \
+        --without-hdf5 \
+        --with-hwloc=/usr \
+        --with-libevent=/usr \        
     && make install \
     && install -D -m644 etc/cgroup.conf.example /etc/slurm/cgroup.conf.example \
     && install -D -m644 etc/slurm.conf.example /etc/slurm/slurm.conf.example \

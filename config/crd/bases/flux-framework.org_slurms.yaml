@@ -244,7 +244,7 @@ spec:
                 description: Resources include limits and requests
                 type: object
               size:
-                description: Size of the slurm (1 server + (N-1) nodes)
+                description: Size is number of worker nodes
                 format: int32
                 type: integer
               slurmVersion:

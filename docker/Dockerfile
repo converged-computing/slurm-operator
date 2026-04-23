@@ -39,11 +39,21 @@ RUN set -ex \
        bash-completion \
        vim-enhanced \
        http-parser-devel \
+       hwloc-devel \
+       libevent-devel \
        json-c-devel \
     && yum clean all \
     && rm -rf /var/cache/yum
 
 RUN pip3 install Cython nose
+
+RUN set -x \
+    && wget https://github.com/openpmix/openpmix/releases/download/v3.2.3/pmix-3.2.3.tar.gz \
+    && tar -xvf pmix-3.2.3.tar.gz \
+    && cd pmix-3.2.3 \
+    && ./configure --prefix=/opt/pmix --disable-static \
+    && make -j$(nproc) install \
+    && cd .. && rm -rf pmix-3.2.3*
 
 RUN set -ex \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-${ARCH}" \
@@ -58,8 +68,15 @@ RUN set -ex \
 RUN set -x \
     && git clone -b ${SLURM_TAG} --single-branch --depth=1 https://github.com/SchedMD/slurm.git \
     && pushd slurm \
+    && export CFLAGS="-I/usr/include" \
+    && export LDFLAGS="-L/usr/lib/$(uname -m)-linux-gnu" \
     && ./configure --enable-debug --prefix=/usr --sysconfdir=/etc/slurm \
-        --with-mysql_config=/usr/bin  --libdir=/usr/lib64 \
+        --with-mysql_config=/usr/bin \
+        --libdir=/usr/lib \
+        --with-pmix=/opt/pmix \
+        --with-hwloc=/usr \
+        --without-hdf5 \        
+        --with-libevent=/usr \        
     && make install \
     && install -D -m644 etc/cgroup.conf.example /etc/slurm/cgroup.conf.example \
     && install -D -m644 etc/slurm.conf.example /etc/slurm/slurm.conf.example \

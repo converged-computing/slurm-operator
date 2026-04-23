@@ -95,7 +95,7 @@ func generateHostlist(cluster *api.Slurm) string {
 	hosts := ""
 
 	serviceName := cluster.ServiceName()
-	for i := 0; i < int(cluster.WorkerNodes()); i++ {
+	for i := 0; i < int(cluster.Spec.Size); i++ {
 		if hosts == "" {
 			hosts = fmt.Sprintf("%s-w-0-%d.%s.%s.svc.cluster.local", cluster.Name, i, serviceName, cluster.Namespace)
 		} else {

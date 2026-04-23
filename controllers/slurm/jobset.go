@@ -93,9 +93,8 @@ func (r *SlurmReconciler) newJobSet(
 
 	}
 
-	// Create a cluster (JobSet) with workers (required)
-	workerNodes := cluster.WorkerNodes()
-	workerJob, err := r.getJob(cluster, cluster.WorkerNode(), workerNodes, "w", true)
+	// Create a cluster (JobSet) with workers
+	workerJob, err := r.getJob(cluster, cluster.WorkerNode(), cluster.Spec.Size, "w", true)
 	if err != nil {
 		r.Log.Error(err, "There was an error getting the worker ReplicatedJob")
 		return &jobs, err

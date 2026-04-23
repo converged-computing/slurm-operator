@@ -63,7 +63,7 @@ type SlurmSpec struct {
 	// +optional
 	SlurmVersion string `json:"slurmVersion,omitempty"`
 
-	// Size of the slurm (1 server + (N-1) nodes)
+	// Size is number of worker nodes
 	Size int32 `json:"size"`
 
 	// Interactive mode keeps the cluster running
@@ -230,8 +230,8 @@ func (s *Slurm) SelectorName() string {
 
 // Validate the slurm
 func (s *Slurm) Validate() bool {
-	if s.WorkerNodes() < 1 {
-		fmt.Printf("😥️ Slurm cluster must have at least one worker node, Size >= 2.\n")
+	if s.Spec.Size < 1 {
+		fmt.Printf("😥️ Slurm cluster must have 1 or more worker nodes.\n")
 		return false
 	}
 	// Ensure we have the default image set
@@ -256,12 +256,6 @@ func (s *Slurm) Validate() bool {
 		s.Spec.Database.User = "slurm"
 	}
 	return true
-}
-
-// WorkerNodes returns the number of worker nodes
-// At this point we've already validated size is >= 1
-func (s *Slurm) WorkerNodes() int32 {
-	return s.Spec.Size - 1
 }
 
 // WorkerNode returns the worker node (if defined) or falls back to the server
