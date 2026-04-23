@@ -168,6 +168,11 @@ type Node struct {
 	// +optional
 	WorkingDir string `json:"workingDir,omitempty"`
 
+	// Node specification. Leave empty for testing cluster
+	// This does not include hostlist (generated automatically)
+	// +optional
+	Nodespec string `json:"nodespec,omitempty"`
+
 	// PullAlways will always pull the container
 	// +optional
 	PullAlways bool `json:"pullAlways"`
@@ -238,6 +243,10 @@ func (s *Slurm) Validate() bool {
 		s.Spec.ClusterName = "linux"
 	}
 
+	// Default node spec
+	if s.Spec.Node.Nodespec == "" {
+		s.Spec.Node.Nodespec = "RealMemory=1000 CPUs=1 State=UNKNOWN"
+	}
 	// Along with a username and password
 	if s.Spec.Database.DatabaseName == "" {
 		s.Spec.Database.DatabaseName = "slurm_acct_db"

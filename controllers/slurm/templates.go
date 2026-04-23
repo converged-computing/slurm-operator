@@ -50,6 +50,7 @@ type ConfigTemplate struct {
 	ControlHost  string
 	DatabaseHost string
 	Hostlist     string
+	Nodespec     string
 }
 
 // combineTemplates into one "start"
@@ -124,6 +125,7 @@ func generateConfig(cluster *api.Slurm, startTemplate string) (string, error) {
 		DatabaseHost: database,
 		DaemonHost:   daemon,
 		Hostlist:     generateHostlist(cluster),
+		Nodespec:     cluster.Spec.Worker.Nodespec,
 	}
 
 	// Wrap the named template to identify it later

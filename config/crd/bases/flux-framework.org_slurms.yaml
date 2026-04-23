@@ -65,6 +65,11 @@ spec:
                     default: ghcr.io/converged-computing/slurm
                     description: Image to use for slurm
                     type: string
+                  nodespec:
+                    description: |-
+                      Node specification. Leave empty for testing cluster
+                      This does not include hostlist (generated automatically)
+                    type: string
                   ports:
                     description: |-
                       Ports to be exposed to other containers in the cluster
@@ -188,6 +193,11 @@ spec:
                     default: ghcr.io/converged-computing/slurm
                     description: Image to use for slurm
                     type: string
+                  nodespec:
+                    description: |-
+                      Node specification. Leave empty for testing cluster
+                      This does not include hostlist (generated automatically)
+                    type: string
                   ports:
                     description: |-
                       Ports to be exposed to other containers in the cluster
@@ -265,6 +275,11 @@ spec:
                   image:
                     default: ghcr.io/converged-computing/slurm
                     description: Image to use for slurm
+                    type: string
+                  nodespec:
+                    description: |-
+                      Node specification. Leave empty for testing cluster
+                      This does not include hostlist (generated automatically)
                     type: string
                   ports:
                     description: |-
