@@ -94,13 +94,14 @@ func generateScript(cluster *api.Slurm, node api.Node, startTemplate string) (st
 func generateHostlist(cluster *api.Slurm) string {
 	hosts := ""
 
+	// slurm-w-0-[0-4].slurm-svc.default.svc.cluster.local
 	serviceName := cluster.ServiceName()
-	for i := 0; i < int(cluster.Spec.Size); i++ {
-		if hosts == "" {
-			hosts = fmt.Sprintf("%s-w-0-%d.%s.%s.svc.cluster.local", cluster.Name, i, serviceName, cluster.Namespace)
-		} else {
-			hosts = fmt.Sprintf("%s,%s-w-0-%d.%s.%s.svc.cluster.local", hosts, cluster.Name, i, serviceName, cluster.Namespace)
-		}
+	if cluster.Spec.Size == 1 {
+		hosts = fmt.Sprintf("%s-w-0-0.%s.%s.svc.cluster.local", cluster.Name, serviceName, cluster.Namespace)
+	} else {
+		idx := cluster.Spec.Size - 1
+		hosts = fmt.Sprintf("%s-w-[0-%d].%s.%s.svc.cluster.local", cluster.Name, idx, serviceName, cluster.Namespace)
+
 	}
 	return hosts
 }
