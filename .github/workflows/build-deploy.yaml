@@ -27,12 +27,14 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Add custom buildx ARM builder
+      if: (github.event_name != 'pull_request')
       run: |
        docker buildx create --name armbuilder
        docker buildx use armbuilder
        docker buildx inspect --bootstrap
 
     - name: Deploy Container
+      if: (github.event_name != 'pull_request')
       run: make arm-deploy
 
   build:

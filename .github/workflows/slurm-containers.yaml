@@ -12,7 +12,7 @@ jobs:
     env:
       container: ghcr.io/converged-computing/slurm
     runs-on: ubuntu-latest
-    name: make and build arm
+    name: build arm slurm ubuntu
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -28,12 +28,14 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Add custom buildx ARM builder
+      if: (github.event_name != 'pull_request')
       run: |
        docker buildx create --name armbuilder
        docker buildx use armbuilder
        docker buildx inspect --bootstrap
 
     - name: Build and Deploy Container
+      if: (github.event_name != 'pull_request')
       run: docker buildx build -f docker/Dockerfile.ubuntu --build-arg ARCH=arm64 --platform linux/arm64 --push -t ${{ env.container }}:ubuntu-arm ./docker
 
   build-arm:
@@ -56,12 +58,14 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Add custom buildx ARM builder
+      if: (github.event_name != 'pull_request')
       run: |
        docker buildx create --name armbuilder
        docker buildx use armbuilder
        docker buildx inspect --bootstrap
 
     - name: Build and Deploy Container
+      if: (github.event_name != 'pull_request')
       run: docker buildx build -f docker/Dockerfile --build-arg ARCH=arm64 --platform linux/arm64 --push -t ${{ env.container }}:arm ./docker
 
 
