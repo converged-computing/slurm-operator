@@ -1,5 +1,7 @@
 # slurm-operator
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20128848.svg)](https://doi.org/10.5281/zenodo.20128848)
+
 > What happens when I run out of things to do on a Monday... ohno 
 
 This will be an attempt at creating a slurm operator. I mostly want to learn a production setup for SLURM,
